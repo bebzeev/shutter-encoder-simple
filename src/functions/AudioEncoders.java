@@ -260,7 +260,7 @@ public class AudioEncoders extends Shutter {
 						}
 						
 						//Output name
-						String fileOutputName =  labelOutput.replace("\\", "/") + "/" + prefix + fileName.replace(extension, extensionName + container); 
+						String fileOutputName = labelOutput.replace("\\", "/") + "/" + prefix + fileName.replace(extension, extensionName + container); 
 						
 						//File output
 						File fileOut = new File(fileOutputName);				
@@ -481,13 +481,20 @@ public class AudioEncoders extends Shutter {
 			audio = "-filter_complex " + '"' + "[0:a][1:a][2:a][3:a][4:a][5:a]join=inputs=6:channel_layout=5.1" + audioFiltering + "[a]" + '"' + " -map " + '"' + "[a]" + '"' + " ";
 		}
 		else if (caseMixAudio.isSelected() && lblMix.getText().equals(language.getProperty("mono")))						
-		{
-			for (int n = 1 ; n < list.size() ; n++)
+		{			
+			if (FFPROBE.stereo || FFPROBE.surround) // Convert each file to mono, do not use amerge
 			{
-				audio += "-i " + '"' + list.elementAt(n) + '"' + " ";
+				audio += "-ac 1 ";
 			}
-			
-			audio += "-filter_complex amerge=inputs=" + list.size() + audioFiltering + " -ac 1 ";
+			else
+			{
+				for (int n = 1 ; n < list.size() ; n++)
+				{
+					audio += "-i " + '"' + list.elementAt(n) + '"' + " ";
+				}
+				
+				audio += "-filter_complex amerge=inputs=" + list.size() + audioFiltering + " -ac 1 ";
+			}
 			
 		}		
 		else if (FFPROBE.stereo)
@@ -731,9 +738,18 @@ public class AudioEncoders extends Shutter {
 		if (Settings.btnSetBab.isSelected())
 			return true;
 		
-		//MixAudio
-		if (caseMixAudio.isSelected() && FFPROBE.surround == false)
-			return true;
+		//MixAudio		
+		if (caseMixAudio.isSelected())
+		{
+			if (lblMix.getText().equals(language.getProperty("mono")) && (FFPROBE.stereo || FFPROBE.surround))					
+			{			
+				// do not break or return anything
+			}
+			else if (FFPROBE.surround == false)
+			{
+				return true;
+			}
+		}
 		
 		//Watch folder
 		if (Shutter.scanIsRunning)

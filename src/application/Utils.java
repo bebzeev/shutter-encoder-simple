@@ -2294,14 +2294,14 @@ public class Utils extends Shutter {
 		UIManager.put("TextComponent.arc", 15);
 		UIManager.put("Component.arc", 15);
 		UIManager.put("PopupMenu.arc", 15);	
-		UIManager.put("ScrollPane.arc", 5);
+		UIManager.put("ScrollPane.arc", 10);
 		UIManager.put("TabbedPane.tabArc", 10);
 		UIManager.put("TabbedPane.cardTabArc", 10);
 		UIManager.put("TabbedPane.tabSelectionArc", 10);
 				
 		UIManager.put("Component.borderColor", c25);
 		UIManager.put("Component.disabledBorderColor", c25);
-		
+
 		UIManager.put("Button.startBorderColor", c25);
 		UIManager.put("Button.endBorderColor", c25);
 		UIManager.put("Button.startBackground", c42);

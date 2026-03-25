@@ -669,7 +669,7 @@ public class WHISPER {
 				processBuilder.command().add("True");
 				
 				//Check is GPU is available
-				if (System.getProperty("os.name").contains("Windows") && PYTHON.isCudaInstalled() && PYTHON.isTorchCudaInstalled() == false)
+				if (System.getProperty("os.name").contains("Windows") && PYTHON.isCudaInstalled() && PYTHON.isTorchCudaInstalled(WHISPER.whisperFolder.toString()) == false)
 				{
 		        	processBuilder.command().add("--device");
 		        	processBuilder.command().add("cpu");			        

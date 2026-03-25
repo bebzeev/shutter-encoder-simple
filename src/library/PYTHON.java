@@ -127,7 +127,7 @@ public class PYTHON extends Shutter {
         return null;
     }
 
-    public static boolean isTorchCudaInstalled() {
+    public static boolean isTorchCudaInstalled(String modulePath) {
     	
         try {
         	
@@ -135,10 +135,10 @@ public class PYTHON extends Shutter {
  			
  			if (System.getProperty("os.name").contains("Windows"))
  			{
- 				processBuilder.command().add(WHISPER.whisperFolder.toString() + "/python.exe");
+ 				processBuilder.command().add(modulePath + "/python.exe");
  			}
  			else
- 				processBuilder.command().add(WHISPER.whisperFolder.toString() + "/bin/python3");
+ 				processBuilder.command().add(modulePath + "/bin/python3");
  			
  			processBuilder.command().add("-m");
  			processBuilder.command().add("pip");

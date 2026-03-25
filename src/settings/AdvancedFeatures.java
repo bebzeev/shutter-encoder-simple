@@ -400,7 +400,8 @@ public class AdvancedFeatures extends Shutter {
 		{
 			case "H.264":
 				
-				if (caseQMax.isSelected() && comboAccel.isEnabled() && comboAccel.getSelectedItem().equals("Nvidia NVENC"))
+				if (caseQMax.isSelected() && comboAccel.isEnabled()
+				&& (comboAccel.getSelectedItem().equals("Nvidia NVENC") || comboAccel.getSelectedItem().equals("Vulkan Video")))
 		        {
 					return " -tune hq";
 		        }
@@ -416,6 +417,10 @@ public class AdvancedFeatures extends Shutter {
 				if (caseQMax.isSelected() && comboAccel.isEnabled() && comboAccel.getSelectedItem().equals("Nvidia NVENC"))
 		        {
 					return " -tune uhq";
+		        }
+				else if (caseQMax.isSelected() && comboAccel.isEnabled() && comboAccel.getSelectedItem().equals("Vulkan Video"))
+		        {
+					return " -tune hq";
 		        }
 				else if (caseForceTune.isSelected())
 		        {
@@ -445,6 +450,15 @@ public class AdvancedFeatures extends Shutter {
 					else
 						return " -tune " + Shutter.comboForceTune.getSelectedItem().toString();
 		        }
+				else if (comboAccel.isEnabled() && comboAccel.getSelectedItem().equals("Vulkan Video"))
+				{
+					if (caseQMax.isSelected())
+					{
+						return " -tune hq";
+					}
+					else
+						return " -tune " + Shutter.comboForceTune.getSelectedItem().toString();
+				}
 				//CPU tuning is handled from setparams
 				
 				break;

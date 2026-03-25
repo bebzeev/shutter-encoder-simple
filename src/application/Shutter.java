@@ -150,6 +150,7 @@ import functions.AudioNormalization;
 import functions.AudioSeparation;
 import functions.BackgroundRemover;
 import functions.BlackDetection;
+import functions.BlurFaces;
 import functions.Colorize;
 import functions.Command;
 import functions.Conform;
@@ -167,6 +168,7 @@ import functions.Rewrap;
 import functions.VMAF;
 import functions.VideoEncoders;
 import functions.VideoInserts;
+import library.ANONYMIZER;
 import library.BACKGROUNDREMOVER;
 import library.BMXTRANSWRAP;
 import library.DCRAW;
@@ -291,7 +293,7 @@ public class Shutter {
 	protected static JComboBox<String> comboFALLvalue;
 	protected static JButton btnLUTs;
 	public static JButton btnStart;
-	protected static JButton btnCancel;
+	public static JButton btnCancel;
 	protected static JCheckBox caseOpenFolderAtEnd1;
 	protected static JCheckBox caseOpenFolderAtEnd2;
 	protected static JCheckBox caseOpenFolderAtEnd3;
@@ -1215,6 +1217,12 @@ public class Shutter {
 						new WHISPER();
 					}
 					
+					//Shutter Anonymizer
+					if (comboFonctions.getSelectedItem().toString().equals(language.getProperty("functionBlurFaces")))
+					{		
+						new ANONYMIZER();
+					}
+					
 					//Install deoldify
 					if (comboFonctions.getSelectedItem().toString().equals(language.getProperty("functionColorize")))
 					{
@@ -1252,7 +1260,6 @@ public class Shutter {
 
 			@Override
 			public void mouseExited(MouseEvent e) {
-				fileList.setBorder(BorderFactory.createLineBorder(Utils.themeColor, 0));
 				lblDestination1.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 0));
 				lblDestination2.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 0));
 				lblDestination3.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 0));
@@ -3104,7 +3111,6 @@ public class Shutter {
 
 			@Override
 			public void mouseExited(MouseEvent e) {
-				fileList.setBorder(BorderFactory.createLineBorder(Utils.themeColor, 0));
 			}
 
 			@Override
@@ -3370,6 +3376,12 @@ public class Shutter {
 				if (DEOLDIFY.runProcess != null) {
 					if (DEOLDIFY.runProcess.isAlive()) {
 						DEOLDIFY.process.destroy();
+					}
+				}
+				
+				if (ANONYMIZER.runProcess != null) {
+					if (ANONYMIZER.runProcess.isAlive()) {
+						ANONYMIZER.process.destroy();
 					}
 				}
 				
@@ -3710,6 +3722,17 @@ public class Shutter {
 								else
 									Colorize.main();
 							}
+							else if (language.getProperty("functionBlurFaces").equals(function))
+							{
+								if (inputDeviceIsRunning)
+								{
+									JOptionPane.showMessageDialog(frame,								
+									language.getProperty("incompatibleInputDevice"),
+									language.getProperty("menuItemScreenRecord"), JOptionPane.ERROR_MESSAGE);
+								}		
+								else
+									BlurFaces.main();
+							}
 							else if (language.getProperty("functionBackgroundRemover").equals(function))
 							{
 								if (inputDeviceIsRunning)
@@ -3947,7 +3970,8 @@ public class Shutter {
 		functionsList = new ArrayList<>(Arrays.asList(
 				
 			    language.getProperty("itemAITools"), language.getProperty("functionSeparation"), language.getProperty("functionTranscribe"),
-			    language.getProperty("functionTranslate"), language.getProperty("functionColorize"), language.getProperty("functionBackgroundRemover"),
+			    language.getProperty("functionTranslate"), language.getProperty("functionColorize"), language.getProperty("functionBlurFaces"),
+			    language.getProperty("functionBackgroundRemover"),
 
 			    language.getProperty("itemNoConversion"), language.getProperty("functionCut"),
 			    language.getProperty("functionReplaceAudio"), language.getProperty("functionRewrap"),
@@ -3985,10 +4009,13 @@ public class Shutter {
 		{
 			functionsList.remove("H.266");
 		    functionsList.remove(language.getProperty("functionTranscribe"));
+		    functionsList.remove(language.getProperty("functionBlurFaces"));
 		}
 		else if (System.getProperty("os.name").contains("Linux"))
 		{
 			functionsList.remove(language.getProperty("functionTranscribe"));
+			functionsList.remove(language.getProperty("functionBlurFaces"));
+			
 		}
 		
 		functionsList.add("- " + language.getProperty("btnManage").toUpperCase() + " -");
@@ -4111,6 +4138,7 @@ public class Shutter {
 						boolean addTranscribeFunction = false;
 						boolean addSeparationFunction = false;
 						boolean addColorizeFunction = false;
+						boolean addBlurFaces = false;
 						boolean addBackgroundRemover = false;
 						for (int i = 0; i < comboFonctions.getItemCount(); i++)
 						{
@@ -4130,6 +4158,10 @@ public class Shutter {
 							        else if (functionsList.get(i).toString().equals(language.getProperty("functionColorize")))
 							        {
 							            addColorizeFunction = true;
+							        }
+							        else if (functionsList.get(i).toString().equals(language.getProperty("functionBlurFaces")))
+							        {
+							        	addBlurFaces = true;
 							        }
 							        else if (functionsList.get(i).toString().equals(language.getProperty("functionBackgroundRemover")))
 							        {
@@ -4154,6 +4186,11 @@ public class Shutter {
 						if (addColorizeFunction)
 						{
 							newList.add(language.getProperty("functionColorize"));
+						}
+						
+						if (addBlurFaces)
+						{
+							newList.add(language.getProperty("functionBlurFaces"));
 						}
 						
 						if (addBackgroundRemover)
@@ -5782,17 +5819,18 @@ public class Shutter {
 						VideoPlayer.preview = null;
 				}
 
-				if (FFPROBE.totalLength <= 40 || comboResolution.getSelectedItem().toString().contains("AI")) {
+				if (FFPROBE.totalLength <= 40 || comboResolution.getSelectedItem().toString().contains("AI"))
+				{
 					if (VideoPlayer.preview != null)
 						VideoPlayer.preview = null;
 
 					VideoPlayer.loadImage(true);
-				} else {
-					VideoPlayer.playerSetTime(VideoPlayer.playerCurrentFrame); // Use VideoPlayer.resizeAll and reload
-																				// the frame
-					VideoPlayer.resizeAll();
 				}
+				else
+					VideoPlayer.playerSetTime(VideoPlayer.playerCurrentFrame); // Use VideoPlayer.resizeAll and reload the frame
 
+				VideoPlayer.resizeAll();
+				
 				if (comboResolution.getSelectedItem().toString().contains("AI")) {
 					iconList.setVisible(false);
 
@@ -5811,6 +5849,7 @@ public class Shutter {
 						&& comboFonctions.getSelectedItem().equals(language.getProperty("functionExtract")) == false
 						&& comboFonctions.getSelectedItem().equals(language.getProperty("functionInsert")) == false
 						&& comboFonctions.getSelectedItem().equals(language.getProperty("functionTranscribe")) == false
+						&& comboFonctions.getSelectedItem().equals(language.getProperty("functionBlurFaces")) == false
 						&& comboFonctions.getSelectedItem().equals(language.getProperty("functionSubtitles")) == false
 						&& comboFonctions.getSelectedItem().equals("DVD Rip") == false
 						&& comboFonctions.getSelectedItem().equals("Loudness & True Peak") == false
@@ -19577,7 +19616,8 @@ public class Shutter {
 					caseForcerEntrelacement.setEnabled(false);
 					
 					String function = comboFonctions.getSelectedItem().toString();
-					if (("H.264".equals(function) || "H.265".equals(function) || "AV1".equals(function)) && comboAccel.isEnabled() && comboAccel.getSelectedItem().equals("Nvidia NVENC"))
+					if (("H.264".equals(function) || "H.265".equals(function) || "AV1".equals(function)) && comboAccel.isEnabled()
+					&& (comboAccel.getSelectedItem().equals("Nvidia NVENC") || comboAccel.getSelectedItem().equals("Vulkan Video")))
 					{
 						caseForceTune.setEnabled(true);
 					}
@@ -19925,6 +19965,7 @@ public class Shutter {
 				|| language.getProperty("functionInsert").equals(function)				
 				|| language.getProperty("functionTranslate").equals(function)
 				|| language.getProperty("functionColorize").equals(function)
+				|| language.getProperty("functionBlurFaces").equals(function)
 				|| language.getProperty("functionBackgroundRemover").equals(function)
 				|| "CD RIP".equals(function) || "DVD Rip".equals(function)
 				|| language.getProperty("functionSceneDetection").equals(function)
@@ -19939,6 +19980,7 @@ public class Shutter {
 		&& comboFonctions.getSelectedItem().equals(language.getProperty("functionInsert")) == false
 		&& comboFonctions.getSelectedItem().equals(language.getProperty("functionSeparation")) == false
 		&& comboFonctions.getSelectedItem().equals(language.getProperty("functionTranscribe")) == false
+		&& comboFonctions.getSelectedItem().equals(language.getProperty("functionBlurFaces")) == false
 		&& comboFonctions.getSelectedItem().equals(language.getProperty("functionTranslate")) == false
 		&& comboFonctions.getSelectedItem().equals(language.getProperty("functionColorize")) == false
 		&& comboFonctions.getSelectedItem().equals(language.getProperty("functionBackgroundRemover")) == false
@@ -20765,6 +20807,7 @@ public class Shutter {
 		|| comboFonctions.getSelectedItem().equals(Shutter.language.getProperty("functionSubtitles"))
 		|| comboFonctions.getSelectedItem().equals(Shutter.language.getProperty("functionExtract"))		
 		|| comboFonctions.getSelectedItem().equals(Shutter.language.getProperty("functionTranscribe"))
+		|| comboFonctions.getSelectedItem().equals(Shutter.language.getProperty("functionBlurFaces"))
 		|| comboFonctions.getSelectedItem().equals(Shutter.language.getProperty("functionTranslate"))
 		|| comboFonctions.getSelectedItem().equals(Shutter.language.getProperty("functionColorize"))
 		|| comboFonctions.getSelectedItem().equals(Shutter.language.getProperty("functionBackgroundRemover"))
@@ -21360,6 +21403,7 @@ public class Shutter {
 							|| language.getProperty("functionOfflineDetection").equals(function)
 							|| language.getProperty("functionSeparation").equals(function)
 							|| language.getProperty("functionTranscribe").equals(function)
+							|| language.getProperty("functionBlurFaces").equals(function)
 							|| "VMAF".equals(function) || "FrameMD5".equals(function)
 							|| language.getProperty("functionInsert").equals(function)) {
 
@@ -22168,7 +22212,8 @@ public class Shutter {
 									caseForcerEntrelacement.setSelected(false);
 									caseForcerEntrelacement.setEnabled(false);
 									
-									if (("H.264".equals(function) || "H.265".equals(function) || "AV1".equals(function)) && comboAccel.isEnabled() && comboAccel.getSelectedItem().equals("Nvidia NVENC"))
+									if (("H.264".equals(function) || "H.265".equals(function) || "AV1".equals(function)) && comboAccel.isEnabled()
+									&& (comboAccel.getSelectedItem().equals("Nvidia NVENC") || comboAccel.getSelectedItem().equals("Vulkan Video")))
 									{
 										caseForceTune.setEnabled(true);
 									}
@@ -22198,7 +22243,7 @@ public class Shutter {
 									}
 
 									//comboForceTune								
-									if (comboAccel.isEnabled() && comboAccel.getSelectedItem().equals("Nvidia NVENC"))
+									if (comboAccel.isEnabled() && (comboAccel.getSelectedItem().equals("Nvidia NVENC") || comboAccel.getSelectedItem().equals("Vulkan Video")))
 									{
 										if (comboForceTune.getModel().getSize() != 4)
 										{
@@ -22244,6 +22289,14 @@ public class Shutter {
 										if (comboForceTune.getModel().getSize() != 5)
 										{
 											comboForceTune.setModel(new DefaultComboBoxModel<String>(new String[] { "hq", "uhq", "ll", "ull", "lossless" }));
+											comboForceTune.setSelectedIndex(0);
+										}
+									}
+									else if (comboAccel.getSelectedItem().equals("Vulkan Video"))
+									{
+										if (comboForceTune.getModel().getSize() != 4)
+										{
+											comboForceTune.setModel(new DefaultComboBoxModel<String>(new String[] { "hq", "ll", "ull", "lossless" }));
 											comboForceTune.setSelectedIndex(0);
 										}
 									}
@@ -23170,8 +23223,7 @@ public class Shutter {
 										caseForcePreset.setEnabled(true);
 									}
 
-									if (comboAccel.getSelectedItem()
-											.equals(language.getProperty("aucune").toLowerCase())) {
+									if (comboAccel.getSelectedItem().equals(language.getProperty("aucune").toLowerCase())) {
 										caseForceTune.setEnabled(true);
 									}
 
@@ -23260,6 +23312,14 @@ public class Shutter {
 										if (comboForceTune.getModel().getSize() != 5)
 										{
 											comboForceTune.setModel(new DefaultComboBoxModel<String>(new String[] { "hq", "uhq", "ll", "ull", "lossless" }));
+											comboForceTune.setSelectedIndex(0);
+										}
+									}
+									else if (comboAccel.getSelectedItem().equals("Vulkan Video"))
+									{
+										if (comboForceTune.getModel().getSize() != 4)
+										{
+											comboForceTune.setModel(new DefaultComboBoxModel<String>(new String[] { "hq", "ll", "ull", "lossless" }));
 											comboForceTune.setSelectedIndex(0);
 										}
 									}
@@ -23798,7 +23858,7 @@ public class Shutter {
 								{
 									addToList.setText(language.getProperty("filesVideoOrAudio"));
 								}
-								else if (language.getProperty("functionSubtitles").equals(function))
+								else if (language.getProperty("functionSubtitles").equals(function) || language.getProperty("functionBlurFaces").equals(function))
 								{
 									addToList.setText(language.getProperty("fileVideo"));
 								}
@@ -25835,7 +25895,6 @@ class ListFileTransferHandler extends TransferHandler {
 			DataFlavor flavor = arg1[i];
 			if (flavor.equals(DataFlavor.javaFileListFlavor) && Shutter.inputDeviceIsRunning == false
 					&& Shutter.comboFonctions.getSelectedItem().equals("DVD Rip") == false) {
-				Shutter.fileList.setBorder(BorderFactory.createLineBorder(Utils.themeColor, 1));
 				return true;
 			}
 		}
@@ -25980,9 +26039,6 @@ class ListFileTransferHandler extends TransferHandler {
 					
 					// Filter
 					Shutter.changeFilters();
-
-					// Border
-					Shutter.fileList.setBorder(BorderFactory.createLineBorder(Utils.themeColor, 0));
 
 					return true;
 				}
