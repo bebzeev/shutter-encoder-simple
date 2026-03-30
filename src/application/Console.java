@@ -19,7 +19,6 @@
 
 package application;
 
-import java.awt.FileDialog;
 import java.awt.Font;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
@@ -31,6 +30,7 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
@@ -48,6 +48,8 @@ import javax.swing.JTextArea;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+
+import com.formdev.flatlaf.util.SystemFileChooser;
 
 @SuppressWarnings("serial")
 public class Console extends JFrame {
@@ -171,60 +173,15 @@ public class Console extends JFrame {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				FileDialog dialog = new FileDialog(frmConsole, Shutter.language.getProperty("saveConsole"), FileDialog.SAVE);
-				if (System.getProperty("os.name").contains("Mac") || System.getProperty("os.name").contains("Linux"))
-					dialog.setDirectory(System.getProperty("user.home") + "/Desktop");
-				else
-					dialog.setDirectory(System.getProperty("user.home") + "\\Desktop");
 				
-				switch (tabbedPane.getSelectedIndex())
+				SystemFileChooser fc = new SystemFileChooser();
+				fc.setCurrentDirectory(new File(System.getProperty("user.home") + "/Desktop"));
+				fc.setSelectedFile(new File(tabbedPane.getTitleAt(tabbedPane.getSelectedIndex())));
+				
+				if (fc.showSaveDialog(Shutter.frame) == SystemFileChooser.APPROVE_OPTION)
 				{
-					case 0:
-						dialog.setFile("FFMPEG");
-						break;
-					case 1:
-						dialog.setFile("FFPLAY");
-						break;
-					case 2:
-						dialog.setFile("FFPROBE");
-						break;
-					case 3:
-						dialog.setFile("BMXTRANSWRAP");
-						break;
-					case 4:
-						dialog.setFile("DVDAUTHOR");
-						break;
-					case 5: 
-						dialog.setFile("TSMUXER");
-						break;
-					case 6:
-						dialog.setFile("MEDIAINFO");
-						break;
-					case 7:
-						dialog.setFile("YOUTUBEDL");
-						break;
-					case 8:
-						dialog.setFile("DCRAW");
-						break;
-					case 9:
-						dialog.setFile("EXIFTOOL");
-						break;
-					case 10:
-						dialog.setFile("NCNN");
-						break;
-					case 12:
-						dialog.setFile("PYTHON");
-						break;
-				}
-				
-				dialog.setLocation(frmConsole.getLocation().x - 50, frmConsole.getLocation().y + 50);
-				dialog.setAlwaysOnTop(true);
-				dialog.setVisible(true);
-
-				if (dialog.getFile() != null)
-				 { 
 					try {
-						PrintWriter writer = new PrintWriter(dialog.getDirectory() + dialog.getFile().replace(".txt", "") + ".txt", "UTF-8");
+						PrintWriter writer = new PrintWriter(fc.getSelectedFile().toString().replace(".txt", "") + ".txt", "UTF-8");
 							switch (tabbedPane.getSelectedIndex())
 							{
 								case 0:

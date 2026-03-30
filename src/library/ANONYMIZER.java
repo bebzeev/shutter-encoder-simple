@@ -188,7 +188,7 @@ public class ANONYMIZER {
 			LIBRARY_DIR = new File(anonymizerApp.getParent() + "\\Library");
 		}	
 		else
-			LIBRARY_DIR = new File(anonymizerApp.getParent() + "/Library");		
+			LIBRARY_DIR = new File(anonymizerApp + "/Contents/app/Library");		
 	}
 	
 	public static String getFaceModel() {
@@ -528,7 +528,7 @@ public class ANONYMIZER {
 				}
 				
 				// GPU
-				if (PYTHON.isTorchCudaInstalled(LIBRARY_DIR.toString()))
+				if (System.getProperty("os.name").contains("Windows") && PYTHON.isTorchCudaInstalled(LIBRARY_DIR.toString()))
 					processBuilder.command().add("--fp16");
 				
 				

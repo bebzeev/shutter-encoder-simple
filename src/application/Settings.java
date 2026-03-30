@@ -23,7 +23,6 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Desktop;
-import java.awt.FileDialog;
 import java.awt.Font;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
@@ -68,7 +67,6 @@ import javax.swing.JColorChooser;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
-import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -86,15 +84,13 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.DirectoryDialog;
-import org.eclipse.swt.widgets.Shell;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.formdev.flatlaf.extras.FlatSVGIcon;
+import com.formdev.flatlaf.util.SystemFileChooser;
 
 import library.FFMPEG;
 
@@ -151,6 +147,7 @@ public class Settings {
 	public static JLabel lblDestination3 = new JLabel(); 
 	public static boolean videoWebCaseMetadata = false;
 	public static Integer savedDayOfYear = 0;
+	public static boolean modelIsSaving;
 	
 	private static int MousePositionX;
 	private static int MousePositionY;
@@ -837,53 +834,19 @@ public class Settings {
 
 			@Override
 			public void mouseClicked(MouseEvent e) {
+			
 				if (lastUsedOutput1.isSelected() == false)
 				{
 					File destination = null;
-					if (System.getProperty("os.name").contains("Mac")) {
-						FileDialog dialog = new FileDialog(frame, Shutter.language.getProperty("chooseDestinationFolder"),
-								FileDialog.LOAD);
-						dialog.setDirectory(System.getProperty("user.home") + "/Desktop");
-						dialog.setLocation(frame.getLocation().x - 50, frame.getLocation().y + 50);
-						dialog.setAlwaysOnTop(true);
-						System.setProperty("apple.awt.fileDialogForDirectories", "true");
-						dialog.setVisible(true);
-						System.setProperty("apple.awt.fileDialogForDirectories", "false");
-						if (dialog.getDirectory() != null)
-							destination = new File(dialog.getDirectory() + dialog.getFile());
-					} else if (System.getProperty("os.name").contains("Linux")) {
-						JFileChooser dialog = new JFileChooser(System.getProperty("user.home") + "/Desktop");
-						dialog.setDialogTitle(Shutter.language.getProperty("chooseDestinationFolder"));
-						dialog.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-						
-						if (Settings.lblDestination1.getText() != "" && new File(Settings.lblDestination1.getText()).exists())
-							dialog.setSelectedFile(new File(Settings.lblDestination1.getText()));
-						else
-							dialog.setSelectedFile(new File(System.getProperty("user.home") + "/Desktop"));
+					
+					SystemFileChooser fc = new SystemFileChooser();
+					fc.setFileSelectionMode(SystemFileChooser.DIRECTORIES_ONLY);
+					fc.setCurrentDirectory(new File(System.getProperty("user.home") + "/Desktop"));
 
-						int result = dialog.showOpenDialog(frame);
-						if (result == JFileChooser.APPROVE_OPTION) 
-			               destination = new File(dialog.getSelectedFile().toString());				   
-					} else {
-						Shell shell = new Shell(SWT.ON_TOP);
-	
-						shell.setSize(frame.getSize().width, frame.getSize().height);
-						shell.setLocation(frame.getLocation().x, frame.getLocation().y);
-						shell.setAlpha(0);
-						shell.open();
-	
-						DirectoryDialog dialog = new DirectoryDialog(shell);
-						dialog.setText(Shutter.language.getProperty("chooseDestinationFolder"));							
-						dialog.setFilterPath(System.getProperty("user.home") + "\\Desktop");
-	
-						try {
-							destination = new File(dialog.open());
-						} catch (Exception e1) {}
-	
-						shell.dispose();
-					}
-	
-					if (destination != null) {					
+					if (fc.showOpenDialog(frame) == SystemFileChooser.APPROVE_OPTION)
+					{
+						destination = fc.getSelectedFile();
+						
 						//Montage du chemin UNC
 						if (System.getProperty("os.name").contains("Windows") && destination.toString().substring(0, 2).equals("\\\\"))
 							destination = Utils.UNCPath(destination);
@@ -964,53 +927,19 @@ public class Settings {
 
 			@Override
 			public void mouseClicked(MouseEvent e) {
+				
 				if (lastUsedOutput2.isSelected() == false)
 				{
 					File destination = null;
-					if (System.getProperty("os.name").contains("Mac")) {
-						FileDialog dialog = new FileDialog(frame, Shutter.language.getProperty("chooseDestinationFolder"),
-								FileDialog.LOAD);
-						dialog.setDirectory(System.getProperty("user.home") + "/Desktop");
-						dialog.setLocation(frame.getLocation().x - 50, frame.getLocation().y + 50);
-						dialog.setAlwaysOnTop(true);
-						System.setProperty("apple.awt.fileDialogForDirectories", "true");
-						dialog.setVisible(true);
-						System.setProperty("apple.awt.fileDialogForDirectories", "false");
-						if (dialog.getDirectory() != null)
-							destination = new File(dialog.getDirectory() + dialog.getFile());
-					} else if (System.getProperty("os.name").contains("Linux")) {
-						JFileChooser dialog = new JFileChooser(System.getProperty("user.home") + "/Desktop");
-						dialog.setDialogTitle(Shutter.language.getProperty("chooseDestinationFolder"));
-						dialog.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-						
-						if (Settings.lblDestination1.getText() != "" && new File(Settings.lblDestination1.getText()).exists())
-							dialog.setSelectedFile(new File(Settings.lblDestination1.getText()));
-						else
-							dialog.setSelectedFile(new File(System.getProperty("user.home") + "/Desktop"));
+					
+					SystemFileChooser fc = new SystemFileChooser();
+					fc.setFileSelectionMode(SystemFileChooser.DIRECTORIES_ONLY);
+					fc.setCurrentDirectory(new File(System.getProperty("user.home") + "/Desktop"));
 
-						int result = dialog.showOpenDialog(frame);
-						if (result == JFileChooser.APPROVE_OPTION) 
-			               destination = new File(dialog.getSelectedFile().toString());				   
-					} else {
-						Shell shell = new Shell(SWT.ON_TOP);
-	
-						shell.setSize(frame.getSize().width, frame.getSize().height);
-						shell.setLocation(frame.getLocation().x, frame.getLocation().y);
-						shell.setAlpha(0);
-						shell.open();
-	
-						DirectoryDialog dialog = new DirectoryDialog(shell);
-						dialog.setText(Shutter.language.getProperty("chooseDestinationFolder"));							
-						dialog.setFilterPath(System.getProperty("user.home") + "\\Desktop");
-	
-						try {
-							destination = new File(dialog.open());
-						} catch (Exception e1) {}
-	
-						shell.dispose();
-					}
-	
-					if (destination != null) {					
+					if (fc.showOpenDialog(frame) == SystemFileChooser.APPROVE_OPTION)
+					{	
+						destination = fc.getSelectedFile();
+				
 						//Montage du chemin UNC
 						if (System.getProperty("os.name").contains("Windows") && destination.toString().substring(0, 2).equals("\\\\"))
 							destination =Utils.UNCPath(destination);
@@ -1082,54 +1011,20 @@ public class Settings {
 		lblDestination3.addMouseListener(new MouseListener() {
 
 			@Override
-			public void mouseClicked(MouseEvent e) {				
+			public void mouseClicked(MouseEvent e) {		
+				
 				if (lastUsedOutput3.isSelected() == false)
 				{
 					File destination = null;
-					if (System.getProperty("os.name").contains("Mac")) {
-						FileDialog dialog = new FileDialog(frame, Shutter.language.getProperty("chooseDestinationFolder"),
-								FileDialog.LOAD);
-						dialog.setDirectory(System.getProperty("user.home") + "/Desktop");
-						dialog.setLocation(frame.getLocation().x - 50, frame.getLocation().y + 50);
-						dialog.setAlwaysOnTop(true);
-						System.setProperty("apple.awt.fileDialogForDirectories", "true");
-						dialog.setVisible(true);
-						System.setProperty("apple.awt.fileDialogForDirectories", "false");
-						if (dialog.getDirectory() != null)
-							destination = new File(dialog.getDirectory() + dialog.getFile());
-					} else if (System.getProperty("os.name").contains("Linux")) {
-						JFileChooser dialog = new JFileChooser(System.getProperty("user.home") + "/Desktop");
-						dialog.setDialogTitle(Shutter.language.getProperty("chooseDestinationFolder"));
-						dialog.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-						
-						if (Settings.lblDestination1.getText() != "" && new File(Settings.lblDestination1.getText()).exists())
-							dialog.setSelectedFile(new File(Settings.lblDestination1.getText()));
-						else
-							dialog.setSelectedFile(new File(System.getProperty("user.home") + "/Desktop"));
+					
+					SystemFileChooser fc = new SystemFileChooser();
+					fc.setFileSelectionMode(SystemFileChooser.DIRECTORIES_ONLY);
+					fc.setCurrentDirectory(new File(System.getProperty("user.home") + "/Desktop"));
 
-						int result = dialog.showOpenDialog(frame);
-						if (result == JFileChooser.APPROVE_OPTION) 
-			               destination = new File(dialog.getSelectedFile().toString());				   
-					} else {
-						Shell shell = new Shell(SWT.ON_TOP);
-	
-						shell.setSize(frame.getSize().width, frame.getSize().height);
-						shell.setLocation(frame.getLocation().x, frame.getLocation().y);
-						shell.setAlpha(0);
-						shell.open();
-	
-						DirectoryDialog dialog = new DirectoryDialog(shell);
-						dialog.setText(Shutter.language.getProperty("chooseDestinationFolder"));							
-						dialog.setFilterPath(System.getProperty("user.home") + "\\Desktop");
-	
-						try {
-							destination = new File(dialog.open());
-						} catch (Exception e1) {}
-	
-						shell.dispose();
-					}
-	
-					if (destination != null) {					
+					if (fc.showOpenDialog(frame) == SystemFileChooser.APPROVE_OPTION)
+					{	
+						destination = fc.getSelectedFile();
+						
 						//Montage du chemin UNC
 						if (System.getProperty("os.name").contains("Windows") && destination.toString().substring(0, 2).equals("\\\\"))
 							destination =Utils.UNCPath(destination);
@@ -2722,6 +2617,10 @@ public class Settings {
 			
 			if (Utils.getLanguage.equals(comboLanguage.getSelectedItem().toString()))
 			{			
+				modelIsSaving = true;
+				
+				Object selectedFunction = Shutter.comboFonctions.getSelectedItem();
+				
 				//Set Model before saving
 				if (ManageFunctions.selectedFunctions != null)
 				{
@@ -2729,6 +2628,11 @@ public class Settings {
 				}
 				else
 					Shutter.comboFonctions.setModel(new DefaultComboBoxModel(Shutter.functionsList.toArray(new String[0])));
+				
+				if (selectedFunction != null)
+					Shutter.comboFonctions.setSelectedItem(selectedFunction);
+				
+				modelIsSaving = false;
 				
 				//Saving functions values			
 				Element functions = document.createElement("Functions");

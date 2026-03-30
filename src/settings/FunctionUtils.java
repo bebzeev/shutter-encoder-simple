@@ -23,7 +23,6 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Desktop;
-import java.awt.FileDialog;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -54,6 +53,8 @@ import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
 import org.apache.commons.io.FileUtils;
+
+import com.formdev.flatlaf.util.SystemFileChooser;
 
 import application.Console;
 import application.RecordInputDevice;
@@ -1737,36 +1738,25 @@ public class FunctionUtils extends Shutter {
 			{
 				File video = new File(fileList.getSelectedValue().toString());
 				String ext = video.toString().substring(video.toString().lastIndexOf("."));
-
-				char slash = '/';
-				if (System.getProperty("os.name").contains("Windows"))
-					slash = '\\';
 				
-				FileDialog dialog = new FileDialog(frame, Shutter.language.getProperty("chooseSubtitles"), FileDialog.LOAD);
+				SystemFileChooser fc = new SystemFileChooser();
+				
 				if (comboSubsSource.getSelectedIndex() == 0) //File
 				{
 					if (new File(video.toString().replace(ext, ".srt")).exists()) {
-						dialog.setDirectory(video.getParent() + slash);
-						dialog.setFile(video.getName().replace(ext, ".srt"));
+						fc.setSelectedFile(new File(video.toString().replace(ext, ".srt")));
 					} else if (new File(video.toString().replace(ext, ".vtt")).exists()) {
-						dialog.setDirectory(video.getParent() + slash);
-						dialog.setFile(video.getName().replace(ext, ".vtt"));
+						fc.setSelectedFile(new File(video.toString().replace(ext, ".vtt")));
 					} else if (new File(video.toString().replace(ext, ".ass")).exists()) {
-						dialog.setDirectory(video.getParent() + slash);
-						dialog.setFile(video.getName().replace(ext, ".ass"));
+						fc.setSelectedFile(new File(video.toString().replace(ext, ".ass")));
 					} else if (new File(video.toString().replace(ext, ".ssa")).exists()) {
-						dialog.setDirectory(video.getParent() + slash);
-						dialog.setFile(video.getName().replace(ext, ".ssa"));
+						fc.setSelectedFile(new File(video.toString().replace(ext, ".ssa")));
 					} else if (new File(video.toString().replace(ext, ".scc")).exists()) {
-						dialog.setDirectory(video.getParent() + slash);
-						dialog.setFile(video.getName().replace(ext, ".scc"));
+						fc.setSelectedFile(new File(video.toString().replace(ext, ".scc")));
 					} else {
-						dialog.setDirectory(new File(VideoPlayer.videoPath).getParent());
-						dialog.setFile("*.srt;*.vtt;*.ass;*.ssa;*.scc");
-						dialog.setLocation(frame.getLocation().x - 50, frame.getLocation().y + 50);
-						dialog.setAlwaysOnTop(true);
-						dialog.setMultipleMode(false);
-						dialog.setVisible(true);
+						fc.setCurrentDirectory(new File(VideoPlayer.videoPath).getParentFile());
+						fc.addChoosableFileFilter(new SystemFileChooser.FileNameExtensionFilter("Subtitles", "srt", "vtt", "ass", "ssa", "scc"));
+						fc.showOpenDialog(frame);
 					}							
 				}
 				else if (comboSubsSource.getSelectedItem().toString().equals(Shutter.language.getProperty("functionTranscribe")))
@@ -1796,22 +1786,21 @@ public class FunctionUtils extends Shutter {
 																						
 					} catch (InterruptedException e) {}					
 					
-					dialog.setDirectory(video.getParent() + slash);
-					dialog.setFile(video.getName().replace(ext, ".srt"));
+					fc.setSelectedFile(new File(video.toString().replace(ext, ".srt")));
 				}						
 				
-				if (dialog.getFile() != null)
+				if (fc.getSelectedFile() != null)
 				{
-					String input = dialog.getFile().substring(dialog.getFile().lastIndexOf("."));
+					String input = fc.getSelectedFile().getName().substring(fc.getSelectedFile().getName().lastIndexOf("."));
 												
 					if (input.equals(".srt") || input.equals(".vtt") || input.equals(".ssa") || input.equals(".ass") || input.equals(".scc"))
 					{
 						if (System.getProperty("os.name").contains("Windows"))
 						{
-							Shutter.subtitlesFile = new File(dialog.getFile());
+							Shutter.subtitlesFile = new File(fc.getSelectedFile().getName());
 						}
 						else
-							Shutter.subtitlesFile = new File(Shutter.dirTemp + dialog.getFile());
+							Shutter.subtitlesFile = new File(Shutter.dirTemp + fc.getSelectedFile().getName());
 						
 						if (input.equals(".srt") || input.equals(".vtt"))
 						{
@@ -1856,7 +1845,7 @@ public class FunctionUtils extends Shutter {
 
 									try {
 										
-										FFMPEG.runSilently(" -i " + '"' + dialog.getDirectory() + dialog.getFile().toString() + '"' + " -y " + '"' + subtitlesFilePath.toString().replace(".srt", "_vtt.srt") + '"');
+										FFMPEG.runSilently(" -i " + '"' + fc.getSelectedFile().toString() + '"' + " -y " + '"' + subtitlesFilePath.toString().replace(".srt", "_vtt.srt") + '"');
 
 										do {
 											Thread.sleep(100);													
@@ -1866,7 +1855,7 @@ public class FunctionUtils extends Shutter {
 
 									Shutter.subtitlesFile = new File(subtitlesFilePath.toString().replace(".srt", "_vtt.srt"));
 								} else
-									subtitlesFilePath = new File(dialog.getDirectory() + dialog.getFile().toString());
+									subtitlesFilePath = new File(fc.getSelectedFile().toString());
 
 								VideoPlayer.writeSub(subtitlesFilePath.toString(), StandardCharsets.UTF_8);
 
@@ -1884,7 +1873,7 @@ public class FunctionUtils extends Shutter {
 									c.setEnabled(true);
 								}
 							} else {
-								SubtitlesEmbed.subtitlesFile1.setText(dialog.getDirectory() + dialog.getFile().toString());
+								SubtitlesEmbed.subtitlesFile1.setText(fc.getSelectedFile().toString());
 
 								if (SubtitlesEmbed.frame == null)
 									new SubtitlesEmbed();
@@ -1954,13 +1943,12 @@ public class FunctionUtils extends Shutter {
 
 								try {
 									FileUtils.copyFile(
-											new File(dialog.getDirectory() + dialog.getFile().toString()),
+											fc.getSelectedFile(),
 											Shutter.subtitlesFile);
 								} catch (IOException e) {
 								}
 							} else {
-								SubtitlesEmbed.subtitlesFile1
-										.setText(dialog.getDirectory() + dialog.getFile().toString());
+								SubtitlesEmbed.subtitlesFile1.setText(fc.getSelectedFile().toString());
 
 								if (SubtitlesEmbed.frame == null)
 									new SubtitlesEmbed();

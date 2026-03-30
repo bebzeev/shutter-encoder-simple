@@ -22,7 +22,6 @@ package application;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
-import java.awt.FileDialog;
 import java.awt.Font;
 import java.awt.MouseInfo;
 import java.awt.datatransfer.DataFlavor;
@@ -56,6 +55,7 @@ import javax.swing.TransferHandler;
 import javax.swing.border.MatteBorder;
 
 import com.formdev.flatlaf.extras.FlatSVGIcon;
+import com.formdev.flatlaf.util.SystemFileChooser;
 
 public class SubtitlesEmbed {
 
@@ -434,20 +434,15 @@ public class SubtitlesEmbed {
 		
 		frame.setAlwaysOnTop(false);
 		
-		FileDialog dialog = new FileDialog(frame, Shutter.language.getProperty("chooseSubtitles"),	FileDialog.LOAD);
-		dialog.setDirectory(new File(Shutter.list.elementAt(0).toString()).getParent());
-		dialog.setFile("*.srt;*.vtt;*.ass;*.ssa;*.scc");
-		dialog.setLocation(frame.getLocation().x - 50, frame.getLocation().y + 50);
-		dialog.setAlwaysOnTop(true);
-		dialog.setMultipleMode(false);
-		dialog.setVisible(true);
-		
-		if (dialog.getFile() != null) 
+		SystemFileChooser fc = new SystemFileChooser();
+        fc.setCurrentDirectory(new File(Shutter.list.elementAt(0).toString()).getParentFile());
+
+        if (fc.showOpenDialog(null) == SystemFileChooser.APPROVE_OPTION)
 		{
-			String input = dialog.getFile().substring(dialog.getFile().lastIndexOf("."));
+			String input = fc.getSelectedFile().getName().substring(fc.getSelectedFile().getName().lastIndexOf("."));
 			if (input.equals(".srt") || input.equals(".vtt") || input.equals(".ssa") || input.equals(".ass") || input.equals(".scc"))
 			{
-				((JTextField) c).setText(dialog.getDirectory() + dialog.getFile().toString());
+				((JTextField) c).setText(fc.getSelectedFile().toString());
 			}
 			else 
 			{

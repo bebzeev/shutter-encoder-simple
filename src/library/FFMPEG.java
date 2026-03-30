@@ -22,7 +22,6 @@ package library;
 import java.awt.AWTEvent;
 import java.awt.Color;
 import java.awt.Cursor;
-import java.awt.FileDialog;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GraphicsConfiguration;
@@ -2068,14 +2067,10 @@ public static StringBuilder errorLog = new StringBuilder();
 	
 	private static void saveToXML(String cmd) {	  
 		
-		FileDialog dialog = new FileDialog(frame, language.getProperty("saveSettings"), FileDialog.SAVE);
-		dialog.setDirectory(Functions.functionsFolder.toString());
-		dialog.setLocation(frame.getLocation().x - 50, frame.getLocation().y + 50);
-		dialog.setAlwaysOnTop(true);
-		dialog.setVisible(true);
+		File savedFilePath = Utils.saveDialog(Functions.functionsFolder);
 								
-		 if (dialog.getFile() != null)
-		 { 
+		if (savedFilePath != null)
+		{
 				try {
 					DocumentBuilderFactory documentFactory = DocumentBuilderFactory.newInstance();
 					DocumentBuilder documentBuilder = documentFactory.newDocumentBuilder();
@@ -2119,7 +2114,7 @@ public static StringBuilder errorLog = new StringBuilder();
 					TransformerFactory transformerFactory = TransformerFactory.newInstance();
 					Transformer transformer = transformerFactory.newTransformer();
 					DOMSource domSource = new DOMSource(document);
-					StreamResult streamResult = new StreamResult(new File(dialog.getDirectory() + dialog.getFile().toString().replace(".enc", "")) + ".enc");
+					StreamResult streamResult = new StreamResult(new File(savedFilePath.toString().replace(".enc", "")) + ".enc");
 
 					transformer.transform(domSource, streamResult);
 				} catch (ParserConfigurationException | TransformerException e) {}

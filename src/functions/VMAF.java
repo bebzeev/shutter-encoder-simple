@@ -18,16 +18,16 @@
 ********************************************************************************************/
 
 package functions;
-
-import java.awt.FileDialog;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
+
 import javax.swing.JOptionPane;
 
 import application.RenderQueue;
 import application.Shutter;
+import application.Utils;
 import application.VideoPlayer;
 import library.FFMPEG;
 import library.FFPROBE;
@@ -59,14 +59,9 @@ public class VMAF extends Shutter {
 					
 					JOptionPane.showMessageDialog(frame, language.getProperty("sourceFile") + language.getProperty("colon") + System.lineSeparator() + file.getName(), "VMAF", JOptionPane.INFORMATION_MESSAGE);
 					
-					FileDialog dialog = new FileDialog(frame, language.getProperty("source"), FileDialog.LOAD);
-					dialog.setDirectory(new File(file.toString()).getParent());
-					dialog.setLocation(frame.getLocation().x - 50, frame.getLocation().y + 50);
-					dialog.setAlwaysOnTop(true);
-					dialog.setMultipleMode(false);
-					dialog.setVisible(true);
-
-					if (dialog.getFile() == null)
+					File savedFilePath = Utils.openDialog(new File(file.toString()).getParentFile());
+					
+					if (savedFilePath == null)
 					{
 						continue;
 					}
@@ -99,7 +94,7 @@ public class VMAF extends Shutter {
 						else
 							cmd =  " -filter_complex libvmaf -an -f null -" + '"';	
 						
-						FFMPEG.run(InputAndOutput.inPoint + " -i " + '"' + file.toString() + '"' + InputAndOutput.inPoint + " -i " + '"' + dialog.getDirectory() + dialog.getFile().toString() + '"' + InputAndOutput.outPoint + cmd);		
+						FFMPEG.run(InputAndOutput.inPoint + " -i " + '"' + file.toString() + '"' + InputAndOutput.inPoint + " -i " + '"' + savedFilePath.toString() + '"' + InputAndOutput.outPoint + cmd);		
 						
 						do
 						{

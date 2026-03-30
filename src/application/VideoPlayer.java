@@ -6478,9 +6478,23 @@ public class VideoPlayer {
 				int subsWidth = (int) ((double) (Integer.parseInt(Shutter.textSubsWidth.getText()) / Shutter.playerRatio));
 				int subsPosY = (int) ((double) Integer.parseInt(Shutter.textSubtitlesPosition.getText()) / Shutter.playerRatio);
 				
-				filter = " -f lavfi -i " + '"' + "color=black@0.0,format=rgba,scale=" + subsWidth + ":" + player.getHeight() + "+" + subsPosY
+				int playerWidth = player.getWidth();
+				int playerHeight = player.getHeight();
+				
+				if (comboPlayerQuality.isVisible() && comboPlayerQuality.getSelectedIndex()!= 0 && FFPROBE.hasAlpha == false && preview == null && Settings.btnPreviewOutput.isSelected() == false)
+				{
+					Dimension dim = getDimension(subsWidth, subsPosY, comboPlayerQuality.getSelectedIndex());
+					subsWidth = dim.width;
+					subsPosY = dim.height;
+					
+					dim = getDimension(playerWidth, playerHeight, comboPlayerQuality.getSelectedIndex());
+					playerWidth = dim.width;
+					playerHeight = dim.height;
+				}
+				
+				filter = " -f lavfi -i " + '"' + "color=black@0.0,format=rgba,scale=" + subsWidth + ":" + playerHeight + "+" + subsPosY
 			  			+ ",subtitles='" + Shutter.subtitlesFile.toString() + "':alpha=1:force_style='FontName=" + Shutter.comboSubsFont.getSelectedItem().toString() + ",FontSize=" + Shutter.textSubsSize.getText() + ",PrimaryColour=&H" + Shutter.subsHex + "&" + background + "'" + '"'
-			  			+ " -filter_complex " + '"' + "[0:v]" + filter.replace(" -vf ", "").replace("\"", "") + "[v];[v][1:v]overlay=x=" + (int) ((player.getWidth() - subsWidth) / 2) + ",scale=" + player.getWidth() + ":" + player.getHeight() + '"';	
+			  			+ " -filter_complex " + '"' + "[0:v]" + filter.replace(" -vf ", "").replace("\"", "") + "[v];[v][1:v]overlay=x=" + (int) ((playerWidth - subsWidth) / 2) + ",scale=" + playerWidth + ":" + playerHeight + '"';	
 			}
 			else
 			{

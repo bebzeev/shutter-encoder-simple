@@ -23,7 +23,6 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
-import java.awt.FileDialog;
 import java.awt.Insets;
 import java.awt.MouseInfo;
 import java.awt.Point;
@@ -37,9 +36,11 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
@@ -78,6 +79,7 @@ import com.formdev.flatlaf.FlatLaf;
 import com.formdev.flatlaf.extras.FlatInspector;
 import com.formdev.flatlaf.extras.FlatSVGIcon;
 import com.formdev.flatlaf.ui.FlatLineBorder;
+import com.formdev.flatlaf.util.SystemFileChooser;
 
 import library.BMXTRANSWRAP;
 import library.DCRAW;
@@ -399,19 +401,20 @@ public class Utils extends Shutter {
 			|| getLanguage.equals(Locale.of("ru").getDisplayLanguage())
 			|| getLanguage.equals(Locale.of("uk").getDisplayLanguage())
 			|| getLanguage.contains(Locale.of("ar").getDisplayLanguage())
-				|| getLanguage.contains(Locale.of("ko").getDisplayLanguage())) //use system default font
+			|| getLanguage.contains(Locale.of("ko").getDisplayLanguage())) //use system default font
 			{
 				Shutter.magnetoFont = "";
 				Shutter.boldFont = "";
 				Shutter.mainFont = "";
 			}
 			else if (getLanguage.contains(Locale.of("vi").getDisplayLanguage())
-			|| getLanguage.contains(Locale.of("pl").getDisplayLanguage())) //use system default font
+			|| getLanguage.contains(Locale.of("pl").getDisplayLanguage())
+			|| getLanguage.contains(Locale.of("ro").getDisplayLanguage())) //use system default font
 			{
 				Shutter.magnetoFont = "";
 				Shutter.boldFont = "FreeSans";
 			}
-			else if (getLanguage.equals(Locale.of("sl").getDisplayLanguage()) || getLanguage.equals(Locale.of("cs").getDisplayLanguage()))
+			else if (getLanguage.equals(Locale.of("sl").getDisplayLanguage()) || getLanguage.equals(Locale.of("cs").getDisplayLanguage())) //Keep header font
 			{
 				Shutter.boldFont = "FreeSans";
 			}
@@ -694,18 +697,13 @@ public class Utils extends Shutter {
 			Functions.functionsFolder.mkdir();
 		}
 		
+		SystemFileChooser fc = new SystemFileChooser();
+        fc.setCurrentDirectory(Functions.functionsFolder);
+        
+        if (update)
+        	fc.setSelectedFile(new File(Functions.listeDeFonctions.getSelectedValue()));					
 		
-		FileDialog dialog = new FileDialog(frame, Shutter.language.getProperty("saveSettings"), FileDialog.SAVE);
-		dialog.setDirectory(Functions.functionsFolder.toString()); 
-		dialog.setLocation(frame.getLocation().x - 50, frame.getLocation().y + 50);
-		dialog.setAlwaysOnTop(true);
-	
-		if (update == false)
-			dialog.setVisible(true);
-		else
-			dialog.setFile("/" + Functions.listeDeFonctions.getSelectedValue()); //le "/" Contourne un bug							
-		
-		 if (dialog.getFile() != null)
+        if (fc.showSaveDialog(null) == SystemFileChooser.APPROVE_OPTION)
 		 { 
 			try {
 				
@@ -1615,7 +1613,7 @@ public class Utils extends Shutter {
 				transformer.setOutputProperty(OutputKeys.INDENT, "yes");
 				transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
 				DOMSource domSource = new DOMSource(document);
-				StreamResult streamResult = new StreamResult(new File(dialog.getDirectory() + dialog.getFile().toString().replace(".enc", "")) + ".enc");
+				StreamResult streamResult = new StreamResult(new File(fc.getSelectedFile().toString().replace(".enc", "")) + ".enc");
 	
 				transformer.transform(domSource, streamResult);
 				
@@ -2710,6 +2708,46 @@ public class Utils extends Shutter {
 		if (concat.exists())
 			concat.delete();
 		
+	}
+	
+	public static File openDialog(File setDirectory) {
+		
+	    final AtomicReference<File> result = new AtomicReference<>();
+
+	    try {
+	        SwingUtilities.invokeAndWait(() -> {
+	            SystemFileChooser fc = new SystemFileChooser();
+	            fc.setCurrentDirectory(setDirectory);
+
+	            if (fc.showOpenDialog(null) == SystemFileChooser.APPROVE_OPTION) {
+	                result.set(fc.getSelectedFile());
+	            }
+	        });
+	    } catch (InvocationTargetException | InterruptedException e) {
+	        e.printStackTrace();
+	    }
+
+	    return result.get();
+	}
+	
+	public static File saveDialog(File setDirectory) {
+		
+	    final AtomicReference<File> result = new AtomicReference<>();
+
+	    try {
+	        SwingUtilities.invokeAndWait(() -> {
+	            SystemFileChooser fc = new SystemFileChooser();
+	            fc.setCurrentDirectory(setDirectory);
+
+	            if (fc.showSaveDialog(null) == SystemFileChooser.APPROVE_OPTION) {
+	                result.set(fc.getSelectedFile());
+	            }
+	        });
+	    } catch (InvocationTargetException | InterruptedException e) {
+	        e.printStackTrace();
+	    }
+
+	    return result.get();
 	}
 	
 }

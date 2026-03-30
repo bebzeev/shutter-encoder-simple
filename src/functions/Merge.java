@@ -20,7 +20,6 @@
 package functions;
 
 import java.awt.Cursor;
-import java.awt.FileDialog;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
@@ -56,22 +55,19 @@ public class Merge extends Shutter {
 				int toExtension = list.firstElement().toString().lastIndexOf('.');
 				String container =  list.firstElement().substring(toExtension);		
 				
-				FileDialog dialog = new FileDialog(frame, Shutter.language.getProperty("chooseFileName"), FileDialog.SAVE);
-				dialog.setDirectory(new File(list.elementAt(0).toString()).getParent());
-				dialog.setFile(language.getProperty("functionMerge") + container);
-
-				dialog.setVisible(true);
-			    
-			    if (dialog.getFile() != null)
-			    {
-					fileOutputName = dialog.getDirectory() + dialog.getFile().toString().replace(container, "") + container;
-					File listeBAB = new File(dialog.getDirectory() + dialog.getFile().toString() + ".txt");
+				File savedFilePath = Utils.saveDialog(new File(list.elementAt(0).toString()).getParentFile());
+				
+				if (savedFilePath != null)
+				{
+					fileOutputName = savedFilePath.toString().replace(container, "") + container;
+					File listeBAB = new File(savedFilePath.toString() + ".txt");
 
 					try {
 						
 						int totalLength = 0;
 						frame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));			
 						PrintWriter writer = new PrintWriter(listeBAB, "UTF-8");   
+						
 						//Timecode
 						String timecode = "";
 							

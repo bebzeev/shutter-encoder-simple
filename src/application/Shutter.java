@@ -1,5 +1,5 @@
 /*******************************************************************************************
-w* Copyright (C) 2026 PACIFICO PAUL
+* Copyright (C) 2026 PACIFICO PAUL
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -28,7 +28,6 @@ import java.awt.ComponentOrientation;
 import java.awt.Cursor;
 import java.awt.Desktop;
 import java.awt.Dimension;
-import java.awt.FileDialog;
 import java.awt.Font;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
@@ -112,7 +111,6 @@ import javax.swing.JColorChooser;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
-import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -139,11 +137,9 @@ import javax.swing.event.ChangeListener;
 import javax.swing.plaf.basic.BasicComboBoxRenderer;
 
 import org.apache.commons.io.FileUtils;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.DirectoryDialog;
-import org.eclipse.swt.widgets.Shell;
 import com.formdev.flatlaf.extras.FlatSVGIcon;
 import com.formdev.flatlaf.ui.FlatLineBorder;
+import com.formdev.flatlaf.util.SystemFileChooser;
 
 import functions.AudioEncoders;
 import functions.AudioNormalization;
@@ -1173,6 +1169,9 @@ public class Shutter {
 			@Override
 			public void itemStateChanged(ItemEvent e) {
 
+				if (Settings.modelIsSaving)
+					return;
+				
 				if (e.getStateChange() == ItemEvent.SELECTED)
 				{
 					changeFunction(true);
@@ -2734,111 +2733,49 @@ public class Shutter {
 		});
 
 		arborescence.addActionListener(new ActionListener() {
+			
 			@SuppressWarnings("deprecation")
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				
 				File source = null;
-				if (System.getProperty("os.name").contains("Mac")) {
-					FileDialog dialog = new FileDialog(frame, language.getProperty("chooseFolderToCopy"),
-							FileDialog.LOAD);
+				
+				SystemFileChooser fc = new SystemFileChooser();
+				fc.setFileSelectionMode(SystemFileChooser.DIRECTORIES_ONLY);
+				
+				if (fileList.getSelectedIndices().length > 0)
+				{
+					fc.setCurrentDirectory(new File(fileList.getSelectedValue().toString()).getParentFile());
+				}
+				else
+					fc.setCurrentDirectory(new File(System.getProperty("user.home") + "/Desktop"));
 
-					if (fileList.getSelectedIndices().length > 0)
-						dialog.setDirectory(new File(fileList.getSelectedValue().toString()).getParent());
-					else
-						dialog.setDirectory(System.getProperty("user.home") + "/Desktop");
-
-					dialog.setLocation(frame.getLocation().x - 50, frame.getLocation().y + 50);
-					dialog.setAlwaysOnTop(true);
-					System.setProperty("apple.awt.fileDialogForDirectories", "true");
-					dialog.setVisible(true);
-					System.setProperty("apple.awt.fileDialogForDirectories", "false");
-					if (dialog.getDirectory() != null)
-						source = new File(dialog.getDirectory() + dialog.getFile());
-				} else if (System.getProperty("os.name").contains("Linux")) {
-					JFileChooser dialog = new JFileChooser(System.getProperty("user.home") + "/Desktop");
-					dialog.setDialogTitle(language.getProperty("chooseDestinationFolder"));
-					dialog.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-
-					if (Settings.lblDestination1.getText() != ""
-							&& new File(Settings.lblDestination1.getText()).exists())
-						dialog.setSelectedFile(new File(Settings.lblDestination1.getText()));
-					else
-						dialog.setSelectedFile(new File(System.getProperty("user.home") + "/Desktop"));
-
-					int result = dialog.showOpenDialog(frame);
-					if (result == JFileChooser.APPROVE_OPTION)
-						source = new File(dialog.getSelectedFile().toString());
-				} else {
-					Shell shell = new Shell(SWT.ON_TOP);
-
-					shell.setSize(frame.getSize().width, frame.getSize().height);
-					shell.setLocation(frame.getLocation().x, frame.getLocation().y);
-					shell.setAlpha(0);
-					shell.open();
-
-					DirectoryDialog dialog = new DirectoryDialog(shell);
-					dialog.setText(language.getProperty("chooseFolderToCopy"));
-					if (fileList.getSelectedIndices().length > 0)
-						dialog.setFilterPath(new File(fileList.getSelectedValue().toString()).getParent());
-					else
-						dialog.setFilterPath(System.getProperty("user.home") + "\\Desktop");
-
-					try {
-						source = new File(dialog.open());
-					} catch (Exception e1) {
-					}
-
-					shell.dispose();
+				if (fc.showOpenDialog(frame) == SystemFileChooser.APPROVE_OPTION)
+				{
+					source = fc.getSelectedFile();
 				}
 
 				File destination = null;
-				if (source != null) {
-					if (System.getProperty("os.name").contains("Mac")) {
-						FileDialog dialog = new FileDialog(frame, language.getProperty("chooseDestinationFolder"),
-								FileDialog.LOAD);
-						dialog.setDirectory(System.getProperty("user.home") + "/Desktop");
-						dialog.setLocation(frame.getLocation().x - 50, frame.getLocation().y + 50);
-						dialog.setAlwaysOnTop(true);
-						System.setProperty("apple.awt.fileDialogForDirectories", "true");
-						dialog.setVisible(true);
-						System.setProperty("apple.awt.fileDialogForDirectories", "false");
-						if (dialog.getDirectory() != null)
-							destination = new File(dialog.getDirectory() + dialog.getFile());
-					} else if (System.getProperty("os.name").contains("Linux")) {
-						JFileChooser dialog = new JFileChooser(System.getProperty("user.home") + "/Desktop");
-						dialog.setDialogTitle(language.getProperty("chooseDestinationFolder"));
-						dialog.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+				
+				if (source != null)
+				{
+					fc = new SystemFileChooser();
+					fc.setFileSelectionMode(SystemFileChooser.DIRECTORIES_ONLY);
+					
+					if (fileList.getSelectedIndices().length > 0)
+					{
+						fc.setCurrentDirectory(new File(fileList.getSelectedValue().toString()).getParentFile());
+					}
+					else
+						fc.setCurrentDirectory(new File(System.getProperty("user.home") + "/Desktop"));
 
-						if (Settings.lblDestination1.getText() != ""
-								&& new File(Settings.lblDestination1.getText()).exists())
-							dialog.setSelectedFile(new File(Settings.lblDestination1.getText()));
-						else
-							dialog.setSelectedFile(new File(System.getProperty("user.home") + "/Desktop"));
-
-						int result = dialog.showOpenDialog(frame);
-						if (result == JFileChooser.APPROVE_OPTION)
-							destination = new File(dialog.getSelectedFile().toString());
-					} else {
-						Shell shell = new Shell(SWT.ON_TOP);
-
-						shell.setSize(frame.getSize().width, frame.getSize().height);
-						shell.setLocation(frame.getLocation().x, frame.getLocation().y);
-						shell.setAlpha(0);
-						shell.open();
-
-						DirectoryDialog dialog = new DirectoryDialog(shell);
-						dialog.setText(language.getProperty("chooseDestinationFolder"));
-						dialog.setFilterPath(System.getProperty("user.home") + "\\Desktop");
-
-						try {
-							destination = new File(dialog.open());
-						} catch (Exception e1) {
-						}
-
-						shell.dispose();
+					if (fc.showOpenDialog(frame) == SystemFileChooser.APPROVE_OPTION)
+					{
+						destination = fc.getSelectedFile();
 					}
 
-					if (destination != null) {
+					if (destination != null)
+					{
 						if (source.toString().equals(destination.toString()))
 							JOptionPane.showMessageDialog(frame, language.getProperty("sameFolders"),
 									language.getProperty("copyError"), JOptionPane.ERROR_MESSAGE);
@@ -2905,18 +2842,13 @@ public class Shutter {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 
-				FileDialog dialog = new FileDialog(frame, language.getProperty("saveZip"), FileDialog.SAVE);
-				if (System.getProperty("os.name").contains("Mac") || System.getProperty("os.name").contains("Linux"))
-					dialog.setDirectory(System.getProperty("user.home") + "/Desktop");
-				else
-					dialog.setDirectory(System.getProperty("user.home") + "\\Desktop");
-				dialog.setLocation(frame.getLocation().x - 50, frame.getLocation().y + 50);
-				dialog.setAlwaysOnTop(true);
-				dialog.setVisible(true);
+				SystemFileChooser fc = new SystemFileChooser();
+				fc.setCurrentDirectory(new File(System.getProperty("user.home") + "/Desktop"));
 
-				if (dialog.getFile() != null) {
+				if (fc.showSaveDialog(frame) == SystemFileChooser.APPROVE_OPTION)
+				{
 					lblCurrentEncoding.setText(language.getProperty("compression"));
-					lblDestination1.setText(dialog.getDirectory());
+					lblDestination1.setText(fc.getCurrentDirectory().toString());
 					progressBar1.setIndeterminate(true);
 
 					StringBuilder items = new StringBuilder();
@@ -2925,8 +2857,7 @@ public class Shutter {
 					}
 
 					disableAll();
-					SEVENZIP.run("a " + '"' + dialog.getDirectory() + dialog.getFile().replace(".zip", "") + ".zip"
-							+ '"' + items, true);
+					SEVENZIP.run("a " + '"' + fc.getSelectedFile().toString().replace(".zip", "") + ".zip" + '"' + items, true);
 				}
 
 			}
@@ -3164,26 +3095,20 @@ public class Shutter {
 
 		btnBrowse.addActionListener(new ActionListener() {
 
-			String defaultFolder = "";
+			File defaultFolder = null;
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
 
-				FileDialog dialog = new FileDialog(frame, language.getProperty("import"), FileDialog.LOAD);
-				if (defaultFolder == "") {
-					if (System.getProperty("os.name").contains("Mac")
-							|| System.getProperty("os.name").contains("Linux"))
-						dialog.setDirectory(System.getProperty("user.home") + "/Desktop");
-					else
-						dialog.setDirectory(System.getProperty("user.home") + "\\Desktop");
-				}
-				dialog.setLocation(frame.getLocation().x - 50, frame.getLocation().y + 50);
-				dialog.setAlwaysOnTop(true);
-				dialog.setMultipleMode(true);
-				dialog.setVisible(true);
+				SystemFileChooser fc = new SystemFileChooser();
+				fc.setMultiSelectionEnabled(true);
+				
+				if (defaultFolder == null)
+					fc.setCurrentDirectory(new File(System.getProperty("user.home") + "/Desktop"));
 
-				if (dialog.getFiles() != null) {
-					File[] files = dialog.getFiles();
+				if (fc.showOpenDialog(frame) == SystemFileChooser.APPROVE_OPTION)
+				{
+				    File[] files = fc.getSelectedFiles();
 
 					for (int i = 0; i < files.length; i++) {
 						int s = files[i].getAbsolutePath().toString().lastIndexOf('.');
@@ -3196,12 +3121,13 @@ public class Shutter {
 
 						// Montage du chemin UNC
 						if (System.getProperty("os.name").contains("Windows")
-								&& file.toString().substring(0, 2).equals("\\\\"))
+						&& file.toString().substring(0, 2).equals("\\\\"))
 							file = Utils.UNCPath(file);
 
 						if (file.getAbsolutePath().toString().contains("\"")
-								|| file.getAbsolutePath().toString().contains("\'") || file.getName().contains("/")
-								|| file.getName().contains("\\")) {
+						|| file.getAbsolutePath().toString().contains("\'") || file.getName().contains("/")
+						|| file.getName().contains("\\"))
+						{
 							if (FunctionUtils.allowsInvalidCharacters == false) {
 								JOptionPane.showConfirmDialog(Shutter.frame,
 										file.getAbsoluteFile().toString() + System.lineSeparator()
@@ -3241,7 +3167,7 @@ public class Shutter {
 					// VideoPlayer.player
 					VideoPlayer.setMedia();
 
-					defaultFolder = dialog.getParent().toString();
+					defaultFolder = fc.getCurrentDirectory();
 				}
 
 			}
@@ -3812,19 +3738,15 @@ public class Shutter {
 									break;
 								case 3:
 									FFMPEG.mseSensibility = 800f;
-									FileDialog dialog = new FileDialog(frame, "Custom", FileDialog.LOAD);
-									dialog.setDirectory(new File(list.elementAt(0).toString()).getParent());
-									dialog.setLocation(frame.getLocation().x - 50, frame.getLocation().y + 50);
-									dialog.setAlwaysOnTop(true);
-									dialog.setMultipleMode(false);
-									dialog.setVisible(true);
-
-									if (dialog.getFile() != null) {
+									
+									SystemFileChooser fc = new SystemFileChooser();
+									fc.setCurrentDirectory(new File(list.elementAt(0).toString()).getParentFile());
+									
+									if (fc.showOpenDialog(frame) == SystemFileChooser.APPROVE_OPTION)
+									{
 										try {
-											sourceFile = new File(dialog.getDirectory() + dialog.getFile().toString())
-													.toURL();
-										} catch (MalformedURLException e2) {
-										}
+											sourceFile = fc.getSelectedFile().toURL();
+										} catch (MalformedURLException e2) {}
 									}
 
 									break;
@@ -4374,74 +4296,30 @@ public class Shutter {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 
-				if (scanIsRunning) {
+				if (scanIsRunning)
+				{
 					caseChangeFolder1.setSelected(true);
-				} else {
-					if (caseChangeFolder1.isSelected() || inputDeviceIsRunning) {
+				}
+				else
+				{
+					if (caseChangeFolder1.isSelected() || inputDeviceIsRunning)
+					{	
 						File destination = null;
-						if (System.getProperty("os.name").contains("Mac")) {
-							FileDialog dialog = new FileDialog(frame, language.getProperty("chooseDestinationFolder"),
-									FileDialog.LOAD);
-
-							if (Settings.lblDestination1.getText() != ""
-									&& new File(Settings.lblDestination1.getText()).exists())
-								dialog.setDirectory(Settings.lblDestination1.getText());
-							else
-								dialog.setDirectory(System.getProperty("user.home") + "/Desktop");
-							dialog.setLocation(frame.getLocation().x - 50, frame.getLocation().y + 50);
-							dialog.setAlwaysOnTop(true);
-							System.setProperty("apple.awt.fileDialogForDirectories", "true");
-							dialog.setVisible(true);
-							System.setProperty("apple.awt.fileDialogForDirectories", "false");
-							if (dialog.getDirectory() != null)
-								destination = new File(dialog.getDirectory() + dialog.getFile());
-						} else if (System.getProperty("os.name").contains("Linux")) {
-							/*
-							 * File dialog = WebDirectoryChooser.showDialog(frame,
-							 * System.getProperty("user.home") + "/Desktop");
-							 * 
-							 * if (dialog != null) destination = dialog;
-							 */
-
-							JFileChooser dialog = new JFileChooser(System.getProperty("user.home") + "/Desktop");
-							dialog.setDialogTitle(language.getProperty("chooseDestinationFolder"));
-							dialog.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-
-							if (Settings.lblDestination1.getText() != ""
-									&& new File(Settings.lblDestination1.getText()).exists())
-								dialog.setSelectedFile(new File(Settings.lblDestination1.getText()));
-							else
-								dialog.setSelectedFile(new File(System.getProperty("user.home") + "/Desktop"));
-
-							int result = dialog.showOpenDialog(frame);
-							if (result == JFileChooser.APPROVE_OPTION)
-								destination = new File(dialog.getSelectedFile().toString());
-						} else {
-							Shell shell = new Shell(SWT.ON_TOP);
-
-							shell.setSize(frame.getSize().width, frame.getSize().height);
-							shell.setLocation(frame.getLocation().x, frame.getLocation().y);
-							shell.setAlpha(0);
-							shell.open();
-
-							DirectoryDialog dialog = new DirectoryDialog(shell);
-							dialog.setText(language.getProperty("chooseDestinationFolder"));
-
-							if (Settings.lblDestination1.getText() != ""
-									&& new File(Settings.lblDestination1.getText()).exists())
-								dialog.setFilterPath(Settings.lblDestination1.getText());
-							else
-								dialog.setFilterPath(System.getProperty("user.home") + "\\Desktop");
-
-							try {
-								destination = new File(dialog.open());
-							} catch (Exception e1) {
-							}
-
-							shell.dispose();
+						
+						SystemFileChooser fc = new SystemFileChooser();
+						fc.setFileSelectionMode(SystemFileChooser.DIRECTORIES_ONLY);
+						
+						if (Settings.lblDestination1.getText() != "" && new File(Settings.lblDestination1.getText()).exists())
+						{
+							fc.setCurrentDirectory(new File(Settings.lblDestination1.getText()));
 						}
+						else
+							fc.setCurrentDirectory(new File(System.getProperty("user.home") + "/Desktop"));
 
-						if (destination != null) {
+						if (fc.showOpenDialog(frame) == SystemFileChooser.APPROVE_OPTION)
+						{
+							destination = fc.getSelectedFile();
+							
 							// Montage du chemin UNC
 							if (System.getProperty("os.name").contains("Windows")
 									&& destination.toString().substring(0, 2).equals("\\\\"))
@@ -4483,9 +4361,9 @@ public class Shutter {
 							if (lblDestination1.getText() != language.getProperty("sameAsSource")
 									&& Settings.lastUsedOutput1.isSelected())
 								Settings.lblDestination1.setText(lblDestination1.getText());
-
-						} else {
-
+						}
+						else
+						{
 							if (scan.getText().equals(language.getProperty("menuItemStopScan")))
 								btnEmptyList.doClick();
 
@@ -4495,10 +4373,12 @@ public class Shutter {
 					} else {
 
 						if (comboFonctions.getSelectedItem().equals(language.getProperty("functionWeb"))
-								|| comboFonctions.getSelectedItem().toString().equals("DVD Rip")
-								|| comboFonctions.getSelectedItem().toString().equals("CD RIP")
-								|| inputDeviceIsRunning) {
-							if (System.getProperty("os.name").contains("Windows")) {
+						|| comboFonctions.getSelectedItem().toString().equals("DVD Rip")
+						|| comboFonctions.getSelectedItem().toString().equals("CD RIP")
+						|| inputDeviceIsRunning)
+						{
+							if (System.getProperty("os.name").contains("Windows"))
+							{
 								if (Settings.lblDestination1.getText() != ""
 										&& new File(Settings.lblDestination1.getText()).exists())
 									lblDestination1.setText(Settings.lblDestination1.getText());
@@ -4518,7 +4398,7 @@ public class Shutter {
 					if (inputDeviceIsRunning)
 						caseChangeFolder1.setSelected(true);
 
-				} // End if scan
+				}
 			}
 		});
 
@@ -4613,69 +4493,31 @@ public class Shutter {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if (scanIsRunning) {
+				
+				if (scanIsRunning) 
+				{
 					caseChangeFolder2.setSelected(true);
-				} else {
-
-					if (caseChangeFolder2.isSelected()) {
+				}
+				else
+				{
+					if (caseChangeFolder2.isSelected())
+					{
 						File destination = null;
-						if (System.getProperty("os.name").contains("Mac")) {
-							FileDialog dialog = new FileDialog(frame, language.getProperty("chooseDestinationFolder"),
-									FileDialog.LOAD);
-
-							if (Settings.lblDestination2.getText() != ""
-									&& new File(Settings.lblDestination2.getText()).exists())
-								dialog.setDirectory(Settings.lblDestination2.getText());
-							else
-								dialog.setDirectory(System.getProperty("user.home") + "/Desktop");
-							dialog.setLocation(frame.getLocation().x - 50, frame.getLocation().y + 50);
-							dialog.setAlwaysOnTop(true);
-							System.setProperty("apple.awt.fileDialogForDirectories", "true");
-							dialog.setVisible(true);
-							System.setProperty("apple.awt.fileDialogForDirectories", "false");
-							if (dialog.getDirectory() != null)
-								destination = new File(dialog.getDirectory() + dialog.getFile());
-						} else if (System.getProperty("os.name").contains("Linux")) {
-							JFileChooser dialog = new JFileChooser(System.getProperty("user.home") + "/Desktop");
-							dialog.setDialogTitle(language.getProperty("chooseDestinationFolder"));
-							dialog.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-
-							if (Settings.lblDestination1.getText() != ""
-									&& new File(Settings.lblDestination1.getText()).exists())
-								dialog.setSelectedFile(new File(Settings.lblDestination1.getText()));
-							else
-								dialog.setSelectedFile(new File(System.getProperty("user.home") + "/Desktop"));
-
-							int result = dialog.showOpenDialog(frame);
-							if (result == JFileChooser.APPROVE_OPTION)
-								destination = new File(dialog.getSelectedFile().toString());
-						} else {
-							Shell shell = new Shell(SWT.ON_TOP);
-
-							shell.setSize(frame.getSize().width, frame.getSize().height);
-							shell.setLocation(frame.getLocation().x, frame.getLocation().y);
-							shell.setAlpha(0);
-							shell.open();
-
-							DirectoryDialog dialog = new DirectoryDialog(shell);
-							dialog.setText(language.getProperty("chooseDestinationFolder"));
-
-							if (Settings.lblDestination2.getText() != ""
-									&& new File(Settings.lblDestination2.getText()).exists())
-								dialog.setFilterPath(Settings.lblDestination2.getText());
-							else
-								dialog.setFilterPath(System.getProperty("user.home") + "\\Desktop");
-
-							try {
-								destination = new File(dialog.open());
-							} catch (Exception e1) {
-							}
-
-							shell.dispose();
+						
+						SystemFileChooser fc = new SystemFileChooser();
+						fc.setFileSelectionMode(SystemFileChooser.DIRECTORIES_ONLY);
+						
+						if (Settings.lblDestination2.getText() != "" && new File(Settings.lblDestination2.getText()).exists())
+						{
+							fc.setCurrentDirectory(new File(Settings.lblDestination2.getText()));
 						}
+						else
+							fc.setCurrentDirectory(new File(System.getProperty("user.home") + "/Desktop"));
 
-						if (destination != null) {
-
+						if (fc.showOpenDialog(frame) == SystemFileChooser.APPROVE_OPTION)
+						{	
+							destination = fc.getSelectedFile();
+							
 							// Montage du chemin UNC
 							if (System.getProperty("os.name").contains("Windows")
 									&& destination.toString().substring(0, 2).equals("\\\\"))
@@ -4727,7 +4569,9 @@ public class Shutter {
 									&& Settings.lastUsedOutput2.isSelected())
 								Settings.lblDestination2.setText(lblDestination2.getText());
 
-						} else {
+						}
+						else
+						{
 							caseChangeFolder2.setSelected(false);
 
 							if (scan.getText().equals(language.getProperty("menuItemStopScan")))
@@ -4755,7 +4599,7 @@ public class Shutter {
 						caseChangeFolder3.setSelected(false);
 						caseChangeFolder3.setEnabled(false);
 					}
-				} // End if scan
+				}
 			}
 		});
 
@@ -4850,68 +4694,30 @@ public class Shutter {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if (scanIsRunning) {
+				
+				if (scanIsRunning)
+				{
 					caseChangeFolder3.setSelected(true);
-				} else {
-
-					if (caseChangeFolder3.isSelected()) {
+				}
+				else
+				{
+					if (caseChangeFolder3.isSelected())
+					{
 						File destination = null;
-						if (System.getProperty("os.name").contains("Mac")) {
-							FileDialog dialog = new FileDialog(frame, language.getProperty("chooseDestinationFolder"),
-									FileDialog.LOAD);
-
-							if (Settings.lblDestination3.getText() != ""
-									&& new File(Settings.lblDestination3.getText()).exists())
-								dialog.setDirectory(Settings.lblDestination3.getText());
-							else
-								dialog.setDirectory(System.getProperty("user.home") + "/Desktop");
-							dialog.setLocation(frame.getLocation().x - 50, frame.getLocation().y + 50);
-							dialog.setAlwaysOnTop(true);
-							System.setProperty("apple.awt.fileDialogForDirectories", "true");
-							dialog.setVisible(true);
-							System.setProperty("apple.awt.fileDialogForDirectories", "false");
-							if (dialog.getDirectory() != null)
-								destination = new File(dialog.getDirectory() + dialog.getFile());
-						} else if (System.getProperty("os.name").contains("Linux")) {
-							JFileChooser dialog = new JFileChooser(System.getProperty("user.home") + "/Desktop");
-							dialog.setDialogTitle(language.getProperty("chooseDestinationFolder"));
-							dialog.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-
-							if (Settings.lblDestination1.getText() != ""
-									&& new File(Settings.lblDestination1.getText()).exists())
-								dialog.setSelectedFile(new File(Settings.lblDestination1.getText()));
-							else
-								dialog.setSelectedFile(new File(System.getProperty("user.home") + "/Desktop"));
-
-							int result = dialog.showOpenDialog(frame);
-							if (result == JFileChooser.APPROVE_OPTION)
-								destination = new File(dialog.getSelectedFile().toString());
-						} else {
-							Shell shell = new Shell(SWT.ON_TOP);
-
-							shell.setSize(frame.getSize().width, frame.getSize().height);
-							shell.setLocation(frame.getLocation().x, frame.getLocation().y);
-							shell.setAlpha(0);
-							shell.open();
-
-							DirectoryDialog dialog = new DirectoryDialog(shell);
-							dialog.setText(language.getProperty("chooseDestinationFolder"));
-
-							if (Settings.lblDestination3.getText() != ""
-									&& new File(Settings.lblDestination3.getText()).exists())
-								dialog.setFilterPath(Settings.lblDestination3.getText());
-							else
-								dialog.setFilterPath(System.getProperty("user.home") + "\\Desktop");
-
-							try {
-								destination = new File(dialog.open());
-							} catch (Exception e1) {
-							}
-
-							shell.dispose();
+						
+						SystemFileChooser fc = new SystemFileChooser();
+						fc.setFileSelectionMode(SystemFileChooser.DIRECTORIES_ONLY);
+						
+						if (Settings.lblDestination3.getText() != "" && new File(Settings.lblDestination3.getText()).exists())
+						{
+							fc.setCurrentDirectory(new File(Settings.lblDestination3.getText()));
 						}
+						else
+							fc.setCurrentDirectory(new File(System.getProperty("user.home") + "/Desktop"));
 
-						if (destination != null) {
+						if (fc.showOpenDialog(frame) == SystemFileChooser.APPROVE_OPTION)
+						{	
+							destination = fc.getSelectedFile();
 
 							// Montage du chemin UNC
 							if (System.getProperty("os.name").contains("Windows")
@@ -4956,13 +4762,17 @@ public class Shutter {
 									&& Settings.lastUsedOutput3.isSelected())
 								Settings.lblDestination3.setText(lblDestination3.getText());
 
-						} else {
+						} 
+						else
+						{
 							caseChangeFolder3.setSelected(false);
 
 							if (scan.getText().equals(language.getProperty("menuItemStopScan")))
 								btnEmptyList.doClick();
 						}
-					} else {
+					}
+					else
+					{
 						if (comboFonctions.getSelectedItem().equals(language.getProperty("functionWeb"))
 								|| comboFonctions.getSelectedItem().toString().equals("DVD Rip")
 								|| comboFonctions.getSelectedItem().toString().equals("CD RIP")
@@ -4978,7 +4788,7 @@ public class Shutter {
 						caseOpenFolderAtEnd3.setSelected(false);
 						caseOpenFolderAtEnd3.setEnabled(false);
 					}
-				} // End if scan
+				}
 			}
 		});
 
@@ -6100,14 +5910,15 @@ public class Shutter {
 		grpResolution.add(lblIsInterpret);
 		if (getLanguage.equals(Locale.of("ru").getDisplayLanguage())
 				|| getLanguage.equals(Locale.of("uk").getDisplayLanguage())
-				|| getLanguage.equals(Locale.of("vi").getDisplayLanguage())) {
+				|| getLanguage.equals(Locale.of("vi").getDisplayLanguage())
+				|| getLanguage.equals(Locale.of("id").getDisplayLanguage())
+				|| getLanguage.equals(Locale.of("ro").getDisplayLanguage())) {
 			lblIsInterpret.setVisible(false);
 		}
 
 		iconTVInterpret = new JLabel(new FlatSVGIcon("contents/preview.svg", 16, 16));
 		iconTVInterpret.setHorizontalAlignment(SwingConstants.CENTER);
-		iconTVInterpret.setBounds(lblIsInterpret.getX() + lblIsInterpret.getWidth() + 1, lblIsInterpret.getY() + 1, 16,
-				16);
+		iconTVInterpret.setBounds(lblIsInterpret.getX() + lblIsInterpret.getWidth() + 1, lblIsInterpret.getY() + 1, 16, 16);
 		iconTVInterpret.setToolTipText(language.getProperty("preview"));
 		grpResolution.add(iconTVInterpret);
 
@@ -8934,8 +8745,7 @@ public class Shutter {
 		caseConvertAudioFramerate = new JCheckBox(language.getProperty("caseConvertAudioFramerate"));
 		caseConvertAudioFramerate.setName("caseConvertAudioFramerate");
 		caseConvertAudioFramerate.setFont(new Font(mainFont, Font.PLAIN, 12));
-		caseConvertAudioFramerate.setBounds(7, caseSampleRate.getY() + caseSampleRate.getHeight(),
-				caseConvertAudioFramerate.getPreferredSize().width, 23);
+		caseConvertAudioFramerate.setBounds(7, caseSampleRate.getY() + caseSampleRate.getHeight(), caseConvertAudioFramerate.getPreferredSize().width, 23);
 		grpAudio.add(caseConvertAudioFramerate);
 
 		caseConvertAudioFramerate.addActionListener(new ActionListener() {
@@ -9025,9 +8835,14 @@ public class Shutter {
 				caseConvertAudioFramerate.getLocation().y + 3);
 
 		if (getLanguage.equals(Locale.of("nl").getDisplayLanguage()) == false
-				&& getLanguage.equals(Locale.of("ru").getDisplayLanguage()) == false
-				&& getLanguage.equals(Locale.of("uk").getDisplayLanguage()) == false)
+		&& getLanguage.equals(Locale.of("ru").getDisplayLanguage()) == false
+		&& getLanguage.equals(Locale.of("uk").getDisplayLanguage()) == false
+		&& getLanguage.equals(Locale.of("id").getDisplayLanguage()) == false
+		&& getLanguage.equals(Locale.of("ro").getDisplayLanguage()) == false
+		&& getLanguage.equals(Locale.of("fi").getDisplayLanguage()) == false)
+		{
 			grpAudio.add(lblAudioIs);
+		}
 	}
 
 	@SuppressWarnings("serial")
@@ -12315,7 +12130,7 @@ public class Shutter {
 
 		caseAddSubtitles = new JCheckBox(Shutter.language.getProperty("caseSubtitles") + Shutter.language.getProperty("colon"));
 		caseAddSubtitles.setName("caseAddSubtitles");
-		caseAddSubtitles.setBounds(8, 16, caseAddSubtitles.getPreferredSize().width + 4, 23);
+		caseAddSubtitles.setBounds(8, 16, caseAddSubtitles.getPreferredSize().width + 5, 23);
 		caseAddSubtitles.setFont(new Font(Shutter.mainFont, Font.PLAIN, 12));
 		caseAddSubtitles.setSelected(false);
 		grpSubtitles.add(caseAddSubtitles);
@@ -12761,8 +12576,7 @@ public class Shutter {
 		lblSize.setFont(new Font(Shutter.mainFont, Font.PLAIN, 12));
 		lblSize.setAlignmentX(SwingConstants.RIGHT);
 		lblSize.setForeground(Utils.themeColor);
-		lblSize.setBounds(panelSubsColor.getLocation().x + panelSubsColor.getWidth() + 7, lblColor.getLocation().y,
-				lblSize.getPreferredSize().width, 16);
+		lblSize.setBounds(panelSubsColor.getLocation().x + panelSubsColor.getWidth() + 7, lblColor.getLocation().y, lblSize.getPreferredSize().width, 16);
 		grpSubtitles.add(lblSize);
 
 		textSubsSize = new JTextField("18");
@@ -13470,16 +13284,13 @@ public class Shutter {
 								VideoPlayer.player.add(overImage);
 							}
 						} else {
-							FileDialog dialog = new FileDialog(frame, Shutter.language.getProperty("chooseLogo"),
-									FileDialog.LOAD);
-							dialog.setDirectory(new File(VideoPlayer.videoPath).getParent());
-							dialog.setLocation(frame.getLocation().x - 50, frame.getLocation().y + 50);
-							dialog.setAlwaysOnTop(true);
-							dialog.setMultipleMode(false);
-							dialog.setVisible(true);
+							
+							SystemFileChooser fc = new SystemFileChooser();
+							fc.setCurrentDirectory(new File(VideoPlayer.videoPath).getParentFile());
 
-							if (dialog.getFile() != null) {
-								logoFile = dialog.getDirectory() + dialog.getFile().toString();
+							if (fc.showOpenDialog(frame) == SystemFileChooser.APPROVE_OPTION)
+							{
+								logoFile = fc.getSelectedFile().toString();
 
 								for (Component c : grpWatermark.getComponents()) {
 									if (c instanceof JComboBox == false) {
@@ -16613,9 +16424,9 @@ public class Shutter {
 
 		JLabel lblSequenceFPS = new JLabel(Shutter.language.getProperty("fps"));
 		lblSequenceFPS.setFont(new Font(mainFont, Font.PLAIN, 12));
-		lblSequenceFPS.setBounds(caseSequenceFPS.getLocation().x + caseSequenceFPS.getWidth() + 4,
-				caseSequenceFPS.getLocation().y, lblSequenceFPS.getPreferredSize().width, 16);
-		grpImageSequence.add(lblSequenceFPS);
+		lblSequenceFPS.setBounds(caseSequenceFPS.getLocation().x + caseSequenceFPS.getWidth() + 4, caseSequenceFPS.getLocation().y, lblSequenceFPS.getPreferredSize().width, 16);
+		if (getLanguage.equals(Locale.of("ro").getDisplayLanguage()) == false)
+			grpImageSequence.add(lblSequenceFPS);
 
 		caseEnableSequence.addActionListener(new ActionListener() {
 
@@ -17201,7 +17012,9 @@ public class Shutter {
 		if (getLanguage.equals(Locale.of("ru").getDisplayLanguage())
 				|| getLanguage.equals(Locale.of("uk").getDisplayLanguage())
 				|| getLanguage.equals(Locale.of("vi").getDisplayLanguage())
-				|| getLanguage.equals(Locale.of("cs").getDisplayLanguage())) {
+				|| getLanguage.equals(Locale.of("cs").getDisplayLanguage())
+				|| getLanguage.equals(Locale.of("id").getDisplayLanguage())
+				|| getLanguage.equals(Locale.of("ro").getDisplayLanguage())) {
 			lblIsConform.setVisible(false);
 		}
 
@@ -23781,7 +23594,9 @@ public class Shutter {
 								grpResolution.add(lblIsInterpret);
 								if (getLanguage.equals(Locale.of("ru").getDisplayLanguage())
 										|| getLanguage.equals(Locale.of("uk").getDisplayLanguage())
-										|| getLanguage.equals(Locale.of("vi").getDisplayLanguage())) {
+										|| getLanguage.equals(Locale.of("vi").getDisplayLanguage())
+										|| getLanguage.equals(Locale.of("id").getDisplayLanguage())
+										|| getLanguage.equals(Locale.of("ro").getDisplayLanguage())) {
 									iconTVInterpret.setLocation(comboInterpret.getX() + comboInterpret.getWidth() + 5,
 											lblIsInterpret.getY() + 1);
 								} else

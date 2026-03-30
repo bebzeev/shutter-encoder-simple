@@ -23,7 +23,6 @@ import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Desktop;
 import java.awt.Dimension;
-import java.awt.FileDialog;
 import java.awt.Font;
 import java.awt.MouseInfo;
 import java.awt.Toolkit;
@@ -455,34 +454,19 @@ import javax.swing.JScrollPane;
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
     		
-				frame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-				frame.setVisible(false);
+				File savedFilePath = Utils.saveDialog(new File(System.getProperty("user.home") + "/Desktop"));
 				
-				final FileDialog dialog = new FileDialog(frame, Shutter.language.getProperty("saveEDL"), FileDialog.SAVE);
-				if (System.getProperty("os.name").contains("Mac") || System.getProperty("os.name").contains("Linux"))
-					dialog.setDirectory(System.getProperty("user.home") + "/Desktop");
-				else
-					dialog.setDirectory(System.getProperty("user.home") + "\\Desktop");
-				dialog.setLocation(frame.getLocation().x - 50, frame.getLocation().y + 50);
-				dialog.setAlwaysOnTop(true);
-				dialog.setVisible(true);
-			    				
-			    frame.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));		
-				frame.setVisible(true);
-				
-				frame.toFront();
-			    
-			    if (dialog.getFile() != null)
-				{ 							
+				if (savedFilePath != null)
+				{
 			    	Thread runProcess = new Thread(new Runnable()  {
 					@Override
 					public void run() {
 						
 					PrintWriter writer = null;
 				    try {
-						writer = new PrintWriter(dialog.getDirectory() + dialog.getFile().replace(".edl", "") + ".edl", "UTF-8");
+						writer = new PrintWriter(savedFilePath.toString().replace(".edl", "") + ".edl", "UTF-8");
 						NumberFormat formatEDL = new DecimalFormat("000000");
-						writer.println("TITLE: " + dialog.getFile());
+						writer.println("TITLE: " + savedFilePath.getName());
 						
 						int countItemsEDL = 0;
 				    	for (int i = 0 ; i < tableRow.getRowCount(); i++)
