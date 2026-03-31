@@ -41,8 +41,11 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -64,8 +67,14 @@ import javax.swing.JSlider;
 import javax.swing.SwingConstants;
 import javax.swing.filechooser.FileSystemView;
 import javax.swing.plaf.basic.BasicSliderUI;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.json.JSONObject;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import application.Console;
 import application.Shutter;
@@ -109,8 +118,18 @@ public class ANONYMIZER {
 
 		if (anonymizerApp != null)
 		{
-			setLibraryDir();
-			ANONYMIZER.setComponents();
+			if (checkAccount())
+			{
+				setLibraryDir();
+				ANONYMIZER.setComponents();
+			}
+			else
+			{
+				Shutter.comboFonctions.setSelectedItem("");
+				try {
+					Desktop.getDesktop().open(anonymizerApp);
+				} catch (IOException e) {}
+			}
 		}
 		else
 		{							
@@ -179,6 +198,69 @@ public class ANONYMIZER {
 			if (Shutter.comboFonctions.getSelectedItem().equals(Shutter.language.getProperty("functionBlurFaces")))
 				Shutter.comboFonctions.setSelectedItem("");
 		}
+	}
+	
+	@SuppressWarnings("resource")
+	private boolean checkAccount() {
+		
+		try {
+			
+			File documents = new File(System.getProperty("user.home") + "/Shutter Anonymizer");
+			File settingsXML = new File(documents + "/settings.xml");
+			String account = null;
+			
+			if (settingsXML.exists())
+			{
+				File fXmlFile = settingsXML;
+				DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+				DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+				Document doc = dBuilder.parse(fXmlFile);
+				doc.getDocumentElement().normalize();
+			
+				NodeList nList = doc.getElementsByTagName("Component");
+				
+				nList = doc.getElementsByTagName("Account");
+				
+				for (int temp = 0; temp < nList.getLength(); temp++)
+				{								
+					Node nNode = nList.item(temp);
+					
+					if (nNode.getNodeType() == Node.ELEMENT_NODE)
+					{
+						Element eElement = (Element) nNode;
+						
+						//Retrieving e-mail
+						if (eElement.getElementsByTagName("Email").item(0).getFirstChild() != null)
+							account = eElement.getElementsByTagName("Email").item(0).getFirstChild().getTextContent();
+					}
+				}
+				
+				File jarFile = anonymizerApp;
+				if (System.getProperty("os.name").contains("Mac"))
+				{
+					jarFile = new File(anonymizerApp.toString() + "/Contents/app/Shutter Anonymizer.jar");
+				}
+				
+				URLClassLoader loader = new URLClassLoader(new URL[]{jarFile.toURI().toURL()}, getClass().getClassLoader());
+		
+				Class<?> authClass = loader.loadClass("security.AuthService");
+				Object authService = authClass.getDeclaredConstructor().newInstance();
+		
+				// Call the login method via reflection
+				Method loginMethod = authClass.getMethod("login", String.class);
+				Object result = loginMethod.invoke(authService, account);
+				
+				if (result.toString().equals("SUCCESS"))
+				{
+					return true;
+				}
+			}
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		return false;
 	}
 	
 	public static void setLibraryDir() {

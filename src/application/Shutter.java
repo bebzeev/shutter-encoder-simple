@@ -1287,7 +1287,7 @@ public class Shutter {
 
 			public void eventDispatched(AWTEvent event) {
 
-				if (comboFonctions.getSelectedItem() != null && comboFonctions.getSelectedItem().equals(Shutter.language.getProperty("functionSubtitles")) == false) {
+				if (comboFonctions.getSelectedItem() != "" && comboFonctions.getSelectedItem().equals(Shutter.language.getProperty("functionSubtitles")) == false) {
 					
 					KeyEvent ke = (KeyEvent) event;
 
@@ -2941,6 +2941,8 @@ public class Shutter {
 
 				if (e.getButton() == MouseEvent.BUTTON3 || (e.getModifiersEx() & KeyEvent.CTRL_DOWN_MASK) != 0 && e.getButton() == MouseEvent.BUTTON1)
 				{
+					System.out.println(comboFonctions.getSelectedItem());
+					
 					if (inputDeviceIsRunning)
 					{						
 						popupList.removeAll();
@@ -3945,7 +3947,7 @@ public class Shutter {
 		comboFonctions = new JComboBox<String[]>();
 		comboFonctions.setName("comboFonctions");
 		comboFonctions.setModel(new DefaultComboBoxModel(functionsList.toArray(new String[0])));
-		comboFonctions.setSelectedItem(null);
+		comboFonctions.setSelectedItem("");
 		comboFonctions.setFont(new Font(mainFont, Font.PLAIN, 11));
 		comboFonctions.setEditable(true);
 		comboFonctions.setMaximumRowCount(Toolkit.getDefaultToolkit().getScreenSize().height / 33);
@@ -4004,7 +4006,7 @@ public class Shutter {
 					new ManageFunctions();	
 					frame.setOpacity(1.0f);
 					
-					comboFonctions.setSelectedItem(null);
+					comboFonctions.setSelectedItem("");
 				}
 
 				if (frame.getWidth() > 654)

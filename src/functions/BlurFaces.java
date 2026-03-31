@@ -92,9 +92,7 @@ public class BlurFaces extends Shutter {
 						//File output
 						File fileOut = new File(fileOutputName);
 						if (fileOut.exists())		
-						{				
-							System.out.println(FunctionUtils.fileReplacement(labelOutput, prefix + fileName, extension, extensionName + "_", container));
-							
+						{
 							fileOut = FunctionUtils.fileReplacement(labelOutput, prefix + fileName, extension, extensionName + "_", container);
 							
 							if (fileOut == null)
