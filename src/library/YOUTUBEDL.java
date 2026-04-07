@@ -355,7 +355,6 @@ public static String format = "";
 					Console.consoleYOUTUBEDL.append(System.lineSeparator());
 														
 					} catch (IOException | InterruptedException e) {
-	                    JOptionPane.showMessageDialog(frame, language.getProperty("downloadError"), language.getProperty("error"), JOptionPane.ERROR_MESSAGE);
 	                    error = true;
 	                    cancelled = true;
 					} finally {

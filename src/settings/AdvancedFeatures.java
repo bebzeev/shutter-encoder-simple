@@ -823,12 +823,7 @@ public class AdvancedFeatures extends Shutter {
 	
 	public static String setOPATOM(String audio) {
 		
-		if (comboFonctions.getSelectedItem().toString().equals("DNxHR")
-		&& caseCreateOPATOM.isSelected() && lblOPATOM.getText().equals("OP-Atom"))
-		{
-			return " -an";
-		}
-		else if (caseOPATOM.isSelected())
+		if (caseOPATOM.isSelected())
 		{
 			return audio;
 		}
@@ -898,14 +893,7 @@ public class AdvancedFeatures extends Shutter {
 			case "XAVC Long GOP":
 				
 				flags += " -f mxf";				
-				break;
-				
-			case "DNxHR":
-				
-				if (caseCreateOPATOM.isSelected() && lblOPATOM.getText().equals("OP-Atom"))
-					flags += " -metadata material_package_name=" + '"' + fileName + '"' + " -f mxf_opatom";
-				
-				break;				
+				break;		
 		}
 				
 		return flags;

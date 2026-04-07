@@ -1126,6 +1126,7 @@ public class VideoEncoders extends Shutter {
 								switch (comboFonctions.getSelectedItem().toString())
 								{
 									case "DNxHD":
+									case "DNxHR":
 									case "XDCAM HD422":
 									case "XDCAM HD 35":
 										
@@ -1140,11 +1141,6 @@ public class VideoEncoders extends Shutter {
 										while (BMXTRANSWRAP.isRunning);
 										
 										fileOut.delete();
-										break;
-										
-									case "DNxHR":
-																		
-										fileOut.renameTo(new File(labelOutput + "/" + prefix + fileName.replace(extension, key + "_v1.mxf")));			
 										break;
 								}							
 							}

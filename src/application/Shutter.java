@@ -190,7 +190,7 @@ public class Shutter {
 	/*
 	 * Initialisation
 	 */
-	public static String actualVersion = "19.9";
+	public static String actualVersion = "20.0";
 	public static String getLanguage = "";
 	public static String arch = "x86_64";
 	public static long availableMemory;
@@ -16813,12 +16813,6 @@ public class Shutter {
 
 				if (caseCreateOPATOM.isSelected()) {
 					setDestinationTabs(2);
-
-					if (comboFonctions.getSelectedItem().toString().equals("DNxHR")
-							&& lblOPATOM.getText().equals("OP-Atom")) {
-						JOptionPane.showMessageDialog(frame, language.getProperty("opatomNoSound"),
-								caseCreateOPATOM.getText(), JOptionPane.WARNING_MESSAGE);
-					}
 
 					if (comboFonctions.getSelectedItem().toString().equals(language.getProperty("functionRewrap"))) {
 						comboFilter.setSelectedItem(".mxf");

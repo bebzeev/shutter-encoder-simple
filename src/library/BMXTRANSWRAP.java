@@ -37,7 +37,7 @@ public static Process process;
 
 	public static void run(final String cmd) {				
 		
-	    Console.consoleBMXTRANSWRAP.append(Shutter.language.getProperty("command") + " " + cmd);
+	    Console.consoleBMXTRANSWRAP.append(Shutter.language.getProperty("command") + " " + cmd + System.lineSeparator());
 	    
 		error = false;
 		
