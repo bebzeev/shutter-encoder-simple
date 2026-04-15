@@ -162,6 +162,7 @@ import functions.Picture;
 import functions.ReplaceAudio;
 import functions.Rewrap;
 import functions.VMAF;
+import functions.SimpleEncoder;
 import functions.VideoEncoders;
 import functions.VideoInserts;
 import library.ANONYMIZER;
@@ -1004,6 +1005,8 @@ public class Shutter {
 		grpImageSequence();
 		Splash.increment();
 		grpBitrate();
+		Splash.increment();
+		SimpleEncoderPanel.init();
 		Splash.increment();
 		Reset();
 		Splash.increment();
@@ -3502,7 +3505,7 @@ public class Shutter {
 				FunctionUtils.noToAll = false;
 				FunctionUtils.skipToAll = false;
 
-				if ((btnStart.getText().equals(language.getProperty("btnStartFunction")) || btnStart.getText().equals(language.getProperty("btnAddToRender"))) && list.getSize() > 0) {
+				if ((btnStart.getText().equals(language.getProperty("btnStartFunction")) || btnStart.getText().equals(language.getProperty("btnAddToRender")) || btnStart.getText().equals(language.getProperty("simpleEncoderConvert"))) && list.getSize() > 0) {
 					grpDestination.setSelectedIndex(0);
 					FFMPEG.error = false;
 					FFMPEG.errorLog.setLength(0);
@@ -3542,7 +3545,9 @@ public class Shutter {
 							}
 
 							String function = comboFonctions.getSelectedItem().toString();
-							if (language.getProperty("functionCut").equals(function)) {
+							if (language.getProperty("simpleEncoder").equals(function)) {
+								SimpleEncoder.main();
+							} else if (language.getProperty("functionCut").equals(function)) {
 								if (inputDeviceIsRunning) {
 									JOptionPane.showMessageDialog(frame,
 											language.getProperty("incompatibleInputDevice"),
@@ -3892,7 +3897,9 @@ public class Shutter {
 		});
 
 		functionsList = new ArrayList<>(Arrays.asList(
-				
+
+			    language.getProperty("itemSimpleEncoder"), language.getProperty("simpleEncoder"),
+
 			    language.getProperty("itemAITools"), language.getProperty("functionSeparation"), language.getProperty("functionTranscribe"),
 			    language.getProperty("functionTranslate"), language.getProperty("functionColorize"), language.getProperty("functionBlurFaces"),
 			    language.getProperty("functionBackgroundRemover"),
@@ -19742,11 +19749,12 @@ public class Shutter {
 		{
 			changeSections(anim);
 		}
-		else if (language.getProperty("functionConform").equals(function)				
+		else if (language.getProperty("simpleEncoder").equals(function)
+			|| language.getProperty("functionConform").equals(function)
 			|| language.getProperty("functionCut").equals(function)
 			|| language.getProperty("functionRewrap").equals(function)
 			|| language.getProperty("functionMerge").equals(function)
-			|| language.getProperty("functionReplaceAudio").equals(function) 
+			|| language.getProperty("functionReplaceAudio").equals(function)
 			|| language.getProperty("functionSeparation").equals(function)
 			|| language.getProperty("functionTranscribe").equals(function)
 			|| "WAV".equals(function) || "AIFF".equals(function) || "FLAC".equals(function) || "ALAC".equals(function)
@@ -20681,6 +20689,12 @@ public class Shutter {
 							} else
 								settingsScrollBar.setVisible(false);
 
+							// Hide simple encoder panel when switching to other functions
+							if (language.getProperty("simpleEncoder").equals(function) == false)
+							{
+								SimpleEncoderPanel.panel.setVisible(false);
+							}
+
 							if (anim)
 							{
 								grpSetTimecode.setSize(grpSetTimecode.getSize().width, 17);
@@ -20710,7 +20724,44 @@ public class Shutter {
 							btnStart.setEnabled(true);
 							btnReset.setVisible(true);
 
-							if (language.getProperty("functionConform").equals(function) || language.getProperty("functionSubtitles").equals(function))
+							if (language.getProperty("simpleEncoder").equals(function))
+							{
+								addToList.setText(language.getProperty("filesVideoOrAudio"));
+
+								// Hide all standard panels
+								grpResolution.setVisible(false);
+								grpBitrate.setVisible(false);
+								grpSetTimecode.setVisible(false);
+								grpSetAudio.setVisible(false);
+								grpAudio.setVisible(false);
+								grpCrop.setVisible(false);
+								grpOverlay.setVisible(false);
+								grpSubtitles.setVisible(false);
+								grpWatermark.setVisible(false);
+								grpColorimetry.setVisible(false);
+								grpImageAdjustement.setVisible(false);
+								grpCorrections.setVisible(false);
+								grpTransitions.setVisible(false);
+								grpImageSequence.setVisible(false);
+								grpImageFilter.setVisible(false);
+								grpAdvanced.setVisible(false);
+								btnReset.setVisible(false);
+
+								// Show simple encoder panel
+								SimpleEncoderPanel.panel.setVisible(true);
+								SimpleEncoderPanel.panel.setLocation(658, 30);
+								SimpleEncoderPanel.updateEstimates();
+
+								// Change button label to "Convert"
+								if (btnStart.getText().equals(language.getProperty("btnStartFunction")))
+								{
+									btnStart.setText(language.getProperty("simpleEncoderConvert"));
+								}
+
+								caseDisplay.setEnabled(false);
+								caseDisplay.setSelected(false);
+
+							} else if (language.getProperty("functionConform").equals(function) || language.getProperty("functionSubtitles").equals(function))
 							{
 								addToList.setText(language.getProperty("filesVideo"));
 
@@ -24884,6 +24935,15 @@ public class Shutter {
 		comboGPUFilter.setEnabled(false);
 		comboAccel.setEnabled(false);
 
+		// Disable simple encoder panel
+		if (SimpleEncoderPanel.panel != null && SimpleEncoderPanel.panel.isVisible())
+		{
+			java.awt.Component[] simpleComponents = SimpleEncoderPanel.panel.getComponents();
+			for (int i = 0; i < simpleComponents.length; i++) {
+				simpleComponents[i].setEnabled(false);
+			}
+		}
+
 		// Disable buttons
 		VideoPlayer.setPlayerButtons(false);
 		VideoPlayer.player.remove(selection);
@@ -24958,6 +25018,16 @@ public class Shutter {
 				components[i].setEnabled(true);
 			}
 			fileList.setEnabled(true);
+		}
+
+		// Re-enable simple encoder panel
+		if (SimpleEncoderPanel.panel != null && SimpleEncoderPanel.panel.isVisible())
+		{
+			components = SimpleEncoderPanel.panel.getComponents();
+			for (int i = 0; i < components.length; i++) {
+				components[i].setEnabled(true);
+			}
+			SimpleEncoderPanel.updateEstimates();
 		}
 
 		components = grpDestination.getComponents();
