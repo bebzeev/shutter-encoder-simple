@@ -17,7 +17,13 @@ javac -cp "lib/*:src" -d /tmp/shutter-build -sourcepath src @/tmp/sources.txt
 
 # Compile specific files (faster iteration)
 javac -cp "lib/*:src" -d /tmp/shutter-build -sourcepath src src/application/Shutter.java src/application/SimpleEncoderPanel.java src/functions/SimpleEncoder.java
+
+# Build macOS .app bundle (run on macOS)
+./build-app.sh
+# Output: dist/Shutter Encoder.app
 ```
+
+**Rebuild the .app after every code change** — `./build-app.sh` compiles, JARs, and repackages everything. Requires a `JRE/` directory (custom jlink build) and `Library/` (ffmpeg etc.) for full functionality.
 
 There are no automated tests. Verify changes by compiling and running the application.
 
