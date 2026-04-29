@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Shutter Simple — Sage App</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper:   #dde3cb;
+    --paper-2: #e6ecd5;
+    --ink:     #111111;
+    --ink-2:   #2a2c25;
+    --muted:   #6a6e5a;
+    --hair:    #1a1a1a;
+    --soft:    #c8cfb3;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 24px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .mono { font-family: 'Space Mono', monospace; }
+
+  .app {
+    width: 920px;
+    max-width: 100%;
+    background: var(--paper);
+    border: 1.5px solid var(--hair);
+    border-radius: 28px;
+    padding: 38px 38px 30px;
+  }
+
+  /* status bar */
+  .status {
+    display: flex;
+    justify-content: space-between;
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    margin-bottom: 18px;
+    color: var(--ink);
+  }
+  .status .signals { display: flex; gap: 6px; align-items: center; }
+  .signals svg { display: block; }
+
+  /* title */
+  .title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 22px;
+  }
+  h1 {
+    font-size: 44px;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    margin: 0;
+    line-height: 1;
+  }
+  .menu {
+    width: 40px; height: 40px;
+    display: grid; place-items: center;
+    cursor: pointer;
+  }
+  .menu div {
+    width: 28px; height: 1.5px;
+    background: var(--ink);
+    margin: 4px 0;
+  }
+
+  /* big pill / quality status */
+  .pill {
+    border: 1.5px solid var(--hair);
+    border-radius: 999px;
+    padding: 16px 22px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 14px;
+  }
+  .stepper { display: flex; align-items: center; gap: 18px; }
+  .step-btn {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    border: 1.5px solid var(--hair);
+    background: transparent;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    color: var(--ink);
+  }
+  .step-btn:hover { background: var(--soft); }
+  .step-btn svg { width: 14px; height: 14px; }
+  .quality-num {
+    font-size: 38px;
+    font-weight: 500;
+    letter-spacing: -0.03em;
+    line-height: 1;
+  }
+  .quality-num small { font-size: 18px; opacity: 0.55; margin-left: 2px; }
+
+  .status-mid {
+    flex: 1;
+    text-align: center;
+    font-size: 16px;
+    line-height: 1.3;
+    color: var(--ink);
+    font-weight: 500;
+  }
+  .status-mid small { color: var(--muted); display: block; font-size: 13px; font-weight: 400; margin-top: 2px; }
+
+  .ring {
+    position: relative;
+    width: 56px; height: 56px;
+    flex-shrink: 0;
+  }
+  .ring svg { transform: rotate(-90deg); }
+  .ring .label {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  /* two-card row */
+  .cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+  .card {
+    border: 1.5px solid var(--hair);
+    border-radius: 22px;
+    padding: 22px 24px;
+    min-height: 240px;
+    position: relative;
+  }
+  .card .lbl {
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .card .lbl small {
+    display: block;
+    color: var(--muted);
+    font-size: 12px;
+    margin-top: 2px;
+    font-weight: 400;
+  }
+  .card .field {
+    display: flex;
+    flex-direction: column;
+    margin-top: 14px;
+  }
+  .card .field .k {
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    text-transform: uppercase;
+    color: var(--ink);
+  }
+  .card .field .v {
+    font-size: 28px;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+    margin-top: 2px;
+  }
+
+  .card-files .columns {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 10px;
+  }
+  .card-files .left-col { width: 40%; }
+  .card-files .right-col { flex: 1; display: flex; flex-direction: column; gap: 12px; }
+
+  .drop-vis {
+    margin-top: 14px;
+    height: 110px;
+    border: 1.5px solid var(--hair);
+    border-radius: 14px;
+    display: grid;
+    place-items: center;
+    color: var(--ink);
+    cursor: pointer;
+    background-image:
+      linear-gradient(var(--hair) 1px, transparent 1px),
+      linear-gradient(90deg, var(--hair) 1px, transparent 1px);
+    background-size: 14px 14px;
+    background-position: 0 0;
+    background-color: var(--paper);
+    background-blend-mode: normal;
+    position: relative;
+    overflow: hidden;
+  }
+  .drop-vis::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: var(--paper);
+    opacity: 0.85;
+  }
+  .drop-vis .ico {
+    position: relative;
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    border: 1.5px solid var(--hair);
+    display: grid; place-items: center;
+    background: var(--paper);
+  }
+  .drop-vis .ico svg { width: 18px; height: 18px; }
+
+  /* output card content */
+  .chips {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    margin-top: 12px;
+  }
+  .chip {
+    border: 1.5px solid var(--hair);
+    border-radius: 999px;
+    padding: 8px 6px;
+    text-align: center;
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    background: var(--paper);
+  }
+  .chip.active { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+
+  .meta-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 16px;
+    margin-top: 16px;
+  }
+  .meta-cell .k {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+  }
+  .meta-cell .v {
+    font-size: 22px;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    margin-top: 2px;
+  }
+
+  /* +ADD row */
+  .add-row {
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    margin-bottom: 8px;
+  }
+
+  /* schedule-like rows */
+  .row {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1.6fr 80px;
+    align-items: center;
+    padding: 18px 4px;
+    border-top: 1.5px solid var(--hair);
+    font-family: 'Space Mono', monospace;
+    font-size: 14px;
+  }
+  .row:last-of-type { border-bottom: 1.5px solid var(--hair); }
+  .row .label-cell {
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .row.bold .label-cell { font-weight: 700; }
+  .row .v {
+    font-weight: 700;
+  }
+  .row .desc { color: var(--ink); }
+
+  .toggle {
+    justify-self: end;
+    width: 70px; height: 30px;
+    border: 1.5px solid var(--hair);
+    border-radius: 999px;
+    position: relative;
+    cursor: pointer;
+    background: var(--paper);
+  }
+  .toggle::after {
+    content: '';
+    position: absolute;
+    top: 2px; left: 2px;
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: var(--paper);
+    border: 1.5px solid var(--hair);
+    transition: left .2s;
+  }
+  .toggle .label-on, .toggle .label-off {
+    position: absolute;
+    top: 50%; transform: translateY(-50%);
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+  }
+  .toggle .label-off { right: 8px; color: var(--ink); }
+  .toggle .label-on  { left: 8px; color: var(--paper); display: none; }
+  .toggle.on { background: var(--ink); }
+  .toggle.on::after { left: 42px; background: var(--paper); }
+  .toggle.on .label-off { display: none; }
+  .toggle.on .label-on  { display: block; }
+
+  /* convert */
+  .convert {
+    display: block;
+    width: 100%;
+    margin-top: 24px;
+    background: var(--ink);
+    color: var(--paper);
+    border: 1.5px solid var(--ink);
+    border-radius: 999px;
+    padding: 18px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 18px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    cursor: pointer;
+  }
+  .convert:hover { background: var(--ink-2); }
+</style>
+</head>
+<body>
+  <div class="app">
+    <div class="status">
+      <span>14:41</span>
+      <div class="signals">
+        <svg width="18" height="13" viewBox="0 0 18 13"><g fill="#111"><rect x="0" y="9" width="2.5" height="4"/><rect x="4" y="6" width="2.5" height="7"/><rect x="8" y="3" width="2.5" height="10"/><rect x="12" y="0" width="2.5" height="13"/></g></svg>
+        <svg width="18" height="13" viewBox="0 0 18 13"><path d="M9 13 L17 5 Q9 -2 1 5 Z" fill="none" stroke="#111" stroke-width="1.5"/></svg>
+        <svg width="22" height="12" viewBox="0 0 22 12"><rect x="0.75" y="0.75" width="19" height="10.5" rx="2" fill="none" stroke="#111" stroke-width="1.5"/><rect x="2.5" y="2.5" width="15.5" height="7" fill="#111"/><rect x="20" y="4" width="1.5" height="4" fill="#111"/></svg>
+      </div>
+    </div>
+
+    <div class="title-row">
+      <h1>Shutter Simple</h1>
+      <div class="menu"><div></div><div></div><div></div></div>
+    </div>
+
+    <div class="pill">
+      <div class="stepper">
+        <button class="step-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </button>
+        <div class="quality-num">65<small>%</small></div>
+        <button class="step-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="5" y1="12" x2="19" y2="12"/><line x1="12" y1="5" x2="12" y2="19"/></svg>
+        </button>
+      </div>
+      <div class="status-mid">
+        High quality, ready to encode<br>
+        <small>~9.3 Mbps · est. 142 MB / min</small>
+      </div>
+      <div class="ring">
+        <svg width="56" height="56" viewBox="0 0 56 56">
+          <circle cx="28" cy="28" r="25" fill="none" stroke="#1a1a1a" stroke-width="1.5" opacity="0.2"/>
+          <circle cx="28" cy="28" r="25" fill="none" stroke="#111" stroke-width="2.5" stroke-dasharray="157" stroke-dashoffset="55" stroke-linecap="round"/>
+        </svg>
+        <div class="label mono">65%</div>
+      </div>
+    </div>
+
+    <div class="cards">
+      <div class="card card-files">
+        <div class="columns">
+          <div class="left-col">
+            <div class="lbl">FILES<br><small>Drop or browse</small></div>
+            <div class="drop-vis">
+              <div class="ico">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="17 8 12 3 7 8"/>
+                  <line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+          <div class="right-col">
+            <div>
+              <div class="k mono">QUEUED</div>
+              <div class="v">0 files</div>
+            </div>
+            <div>
+              <div class="k mono">DURATION</div>
+              <div class="v">0:00</div>
+            </div>
+            <div>
+              <div class="k mono">SOURCE</div>
+              <div class="v" style="font-size: 16px;">—</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="lbl">OUTPUT<br><small>Format & sizing</small></div>
+        <div class="chips">
+          <div class="chip active">MP4</div>
+          <div class="chip">MOV</div>
+          <div class="chip">MP3</div>
+          <div class="chip">WAV</div>
+        </div>
+        <div class="meta-grid">
+          <div class="meta-cell">
+            <div class="k">DIMENSIONS</div>
+            <div class="v">Original</div>
+          </div>
+          <div class="meta-cell">
+            <div class="k">BITRATE</div>
+            <div class="v">9.3 Mbps</div>
+          </div>
+          <div class="meta-cell">
+            <div class="k">SIZE EST.</div>
+            <div class="v">—</div>
+          </div>
+          <div class="meta-cell">
+            <div class="k">CODEC</div>
+            <div class="v">H.264</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="add-row">+ADVANCED</div>
+
+    <div class="row">
+      <div class="label-cell">AUDIO</div>
+      <div class="v">Include</div>
+      <div class="desc">Original track preserved</div>
+      <div class="toggle on"><span class="label-on">ON</span><span class="label-off">OFF</span></div>
+    </div>
+    <div class="row bold">
+      <div class="label-cell">DESTINATION</div>
+      <div class="v">Same as source</div>
+      <div class="desc">Suffix _converted</div>
+      <div class="toggle"><span class="label-on">ON</span><span class="label-off">OFF</span></div>
+    </div>
+    <div class="row">
+      <div class="label-cell">OPEN FOLDER</div>
+      <div class="v">When done</div>
+      <div class="desc">Reveal in Finder</div>
+      <div class="toggle on"><span class="label-on">ON</span><span class="label-off">OFF</span></div>
+    </div>
+    <div class="row">
+      <div class="label-cell">NOTIFY</div>
+      <div class="v">OFF</div>
+      <div class="desc">System notification at end</div>
+      <div class="toggle"><span class="label-on">ON</span><span class="label-off">OFF</span></div>
+    </div>
+
+    <button class="convert">Convert →</button>
+  </div>
+</body>
+</html>

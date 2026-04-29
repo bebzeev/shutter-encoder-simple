@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Shutter Simple — Sage Horizontal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper:   #dde3cb;
+    --paper-2: #e6ecd5;
+    --ink:     #111111;
+    --muted:   #6a6e5a;
+    --hair:    #1a1a1a;
+    --soft:    #c8cfb3;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; height: 100%; }
+  body {
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .mono { font-family: 'Space Mono', monospace; }
+
+  /* ── card ── */
+  .app {
+    width: 80vw;
+    max-width: 1100px;
+    min-width: 680px;
+    /* height is content-driven so hiding block 2 actually shrinks the card */
+    height: auto;
+
+    background: var(--paper);
+    border: 1.5px solid var(--hair);
+    border-radius: 18px;
+    overflow: hidden;
+    resize: both;
+
+    display: grid;
+    grid-template-rows: auto auto auto auto auto;
+  }
+  .block-1 { min-height: 200px; }
+
+  /* ── header ── */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 22px;
+    border-bottom: 1.5px solid var(--hair);
+  }
+  .header h1 {
+    font-size: 18px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    margin: 0;
+  }
+  .header .meta {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .header .meta b { color: var(--ink); font-weight: 700; }
+
+  /* ── BLOCKS ── */
+  .block {
+    display: grid;
+    grid-template-columns: 1fr 1.4fr;
+    min-width: 0;
+    min-height: 0;
+  }
+  .block + .block { border-top: 1.5px solid var(--hair); }
+  .block.hidden { display: none; }
+
+  .block .left, .block .right {
+    padding: 14px 22px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 12px;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .label {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+  .single-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+  .readout {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+    text-align: right;
+    flex-shrink: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* ── BLOCK 1 — drop | format / [alpha] / quality / bitrate ── */
+  .block-1 .left { padding: 12px 16px 12px 22px; }
+  .block-1 .right {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    padding: 8px 22px 8px 16px;
+    gap: 4px;
+  }
+  .block-1 .sub {
+    flex: 1;
+    min-height: 0;
+  }
+
+  .drop {
+    flex: 1;
+    border: 1.5px dashed var(--hair);
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    text-align: center;
+    cursor: pointer;
+    background:
+      repeating-linear-gradient(135deg, transparent 0, transparent 11px,
+        rgba(17,17,17,0.04) 11px, rgba(17,17,17,0.04) 12px),
+      var(--paper);
+    min-height: 0;
+    overflow: hidden;
+  }
+  .drop:hover { background-color: var(--paper-2); border-style: solid; }
+  .drop .icon {
+    width: 38px; height: 38px;
+    border: 1.5px solid var(--hair);
+    border-radius: 50%;
+    display: grid; place-items: center;
+    background: var(--paper);
+    flex-shrink: 0;
+  }
+  .drop .icon svg { width: 18px; height: 18px; }
+  .drop .big {
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    line-height: 1;
+  }
+  .drop .small {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .sub {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+  }
+  .sub .label { width: 70px; }
+  .sub .control {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .alpha-row { display: none; }
+  .alpha-row.visible { display: flex; }
+
+  /* chips */
+  .chips {
+    display: flex;
+    gap: 5px;
+    min-width: 0;
+    overflow: hidden;
+  }
+  .chip {
+    border: 1.5px solid var(--hair);
+    border-radius: 999px;
+    padding: 4px 9px;
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    background: var(--paper);
+    flex-shrink: 0;
+    user-select: none;
+  }
+  .chip.active { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+
+  /* slider */
+  .slider {
+    -webkit-appearance: none;
+    appearance: none;
+    flex: 1;
+    height: 1.5px;
+    background: var(--hair);
+    outline: none;
+    margin: 0;
+    min-width: 0;
+  }
+  .slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: var(--ink);
+    cursor: pointer;
+    border: 1.5px solid var(--ink);
+  }
+  .quality-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .quality-tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    flex-shrink: 0;
+  }
+
+  .bitrate-val {
+    font-size: 16px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    flex-shrink: 0;
+  }
+
+  /* ── BLOCK 2 — dimensions | audio + strip HDR ── */
+  .block-2 .left {
+    flex-direction: row;
+    align-items: center;
+    gap: 14px;
+    padding: 18px 22px;
+  }
+  .block-2 .left .label { width: 96px; }
+  .block-2 .left .field {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    min-width: 0;
+  }
+  .block-2 .right {
+    padding: 14px 22px;
+    gap: 12px;
+  }
+  .block-2 .right .toggle-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-height: 32px;
+  }
+  .block-2 .right .toggle-row .single-label {
+    flex: 1;
+  }
+
+  /* ── BLOCK 3 — prefix/suffix | destination/open folder ── */
+  .block-3 .left, .block-3 .right {
+    padding: 22px 22px;
+    gap: 16px;
+  }
+  .block-3 .field-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 0;
+    min-height: 32px;
+  }
+  .block-3 .field-row .label { width: 96px; }
+  .block-3 .field-row .control {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+  }
+  .block-3 .field-row .single-label { flex: 1; }
+
+  /* ── input + dropdown — locked to identical pixel size ── */
+  .dropdown, .text-input {
+    box-sizing: border-box;
+    display: block;
+    height: 32px;
+    min-height: 32px;
+    max-height: 32px;
+    padding: 0 12px;
+    margin: 0;
+    border: 1.5px solid var(--hair);
+    border-radius: 8px;
+    background-color: var(--paper);
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 28px;
+    color: var(--ink);
+    appearance: none;
+    -webkit-appearance: none;
+    flex: 1;
+    min-width: 0;
+    vertical-align: middle;
+    align-self: center;
+  }
+  .dropdown {
+    padding-right: 30px;
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath fill='%23111' d='M5 7L1 3h8z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+  }
+  .dropdown:focus, .text-input:focus { outline: none; border-color: var(--ink); }
+  .text-input::placeholder { color: var(--muted); font-weight: 400; }
+
+  /* ── toggle ── */
+  .toggle {
+    width: 64px; height: 26px;
+    border: 1.5px solid var(--hair);
+    border-radius: 999px;
+    position: relative;
+    cursor: pointer;
+    background: var(--paper);
+    flex-shrink: 0;
+  }
+  .toggle::after {
+    content: '';
+    position: absolute;
+    top: 1.5px; left: 1.5px;
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: var(--paper);
+    border: 1.5px solid var(--hair);
+    transition: left .2s;
+  }
+  .toggle .label-on, .toggle .label-off {
+    position: absolute;
+    top: 50%; transform: translateY(-50%);
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+  }
+  .toggle .label-off { right: 8px; color: var(--ink); }
+  .toggle .label-on  { left: 9px; color: var(--paper); display: none; }
+  .toggle.on { background: var(--ink); }
+  .toggle.on::after { left: 39px; background: var(--paper); }
+  .toggle.on .label-off { display: none; }
+  .toggle.on .label-on  { display: block; }
+
+  /* ── footer ── */
+  .footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 12px 22px;
+    border-top: 1.5px solid var(--hair);
+    background: var(--paper);
+  }
+  .summary {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .summary b { color: var(--ink); font-weight: 700; }
+
+  .convert {
+    background: var(--ink);
+    color: var(--paper);
+    border: 1.5px solid var(--ink);
+    border-radius: 999px;
+    padding: 11px 30px;
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .convert:hover { background: #2a2a2a; }
+</style>
+</head>
+<body>
+  <div class="app">
+
+    <!-- header -->
+    <div class="header">
+      <h1>Shutter Simple</h1>
+      <div class="meta"><b>v20.0</b> · IDLE · 0 FILES</div>
+    </div>
+
+    <!-- BLOCK 1 -->
+    <div class="block block-1">
+      <div class="left">
+        <div class="drop">
+          <div class="icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+          </div>
+          <div class="big">Drop files here</div>
+          <div class="small">VIDEO / AUDIO · OR CLICK TO BROWSE</div>
+        </div>
+      </div>
+      <div class="right">
+        <div class="sub">
+          <div class="label">Format</div>
+          <div class="control">
+            <div class="chips">
+              <div class="chip" data-fmt="mp4">MP4</div>
+              <div class="chip active" data-fmt="mov">MOV</div>
+              <div class="chip" data-fmt="mp3">MP3</div>
+              <div class="chip" data-fmt="wav">WAV</div>
+            </div>
+          </div>
+          <div class="readout" id="formatReadout">PRORES 422</div>
+        </div>
+        <div class="sub alpha-row visible" id="alphaRow">
+          <div class="label">Alpha&nbsp;Ch.</div>
+          <div class="control">
+            <div class="toggle" id="alphaSwitch">
+              <span class="label-on">ON</span>
+              <span class="label-off">OFF</span>
+            </div>
+          </div>
+        </div>
+        <div class="sub">
+          <div class="label">Quality</div>
+          <div class="control">
+            <input type="range" min="0" max="100" value="65" class="slider">
+            <span class="quality-num">65</span>
+            <span class="quality-tag">High</span>
+          </div>
+        </div>
+        <div class="sub">
+          <div class="label">Bitrate</div>
+          <div class="control">
+            <span class="bitrate-val" id="bitrateVal">~45 Mbps</span>
+          </div>
+          <div class="readout">EST. SIZE —</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BLOCK 2 -->
+    <div class="block block-2" id="block2">
+      <div class="left">
+        <div class="label">Dimensions</div>
+        <div class="field">
+          <select class="dropdown">
+            <option>Keep original</option>
+            <option>3840 × 2160 (4K)</option>
+            <option>1920 × 1080 (1080p)</option>
+            <option>1280 × 720 (720p)</option>
+            <option>854 × 480</option>
+            <option>640 × 360</option>
+          </select>
+        </div>
+      </div>
+      <div class="right">
+        <div class="toggle-row">
+          <div class="single-label">Include audio</div>
+          <div class="toggle on" data-toggle><span class="label-on">ON</span><span class="label-off">OFF</span></div>
+        </div>
+        <div class="toggle-row">
+          <div class="single-label">Convert to SDR</div>
+          <div class="toggle" data-toggle><span class="label-on">ON</span><span class="label-off">OFF</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BLOCK 3 -->
+    <div class="block block-3">
+      <div class="left">
+        <div class="field-row">
+          <div class="label">Prefix</div>
+          <div class="control">
+            <input type="text" class="text-input" placeholder="(none)">
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="label">Suffix</div>
+          <div class="control">
+            <input type="text" class="text-input" value="_converted">
+          </div>
+        </div>
+      </div>
+      <div class="right">
+        <div class="field-row">
+          <div class="label">Destination</div>
+          <div class="control">
+            <select class="dropdown">
+              <option>Same as source</option>
+              <option>Choose folder…</option>
+            </select>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="single-label">Open folder when done</div>
+          <div class="toggle on" data-toggle><span class="label-on">ON</span><span class="label-off">OFF</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- footer -->
+    <div class="footer">
+      <div class="summary" id="summary">
+        OUTPUT <b>MOV / PRORES 422</b> · QUALITY <b>65</b> · DIM <b>ORIGINAL</b> · AUDIO <b>ON</b>
+      </div>
+      <button class="convert">Convert</button>
+    </div>
+
+  </div>
+
+<script>
+  const FORMATS = {
+    mp4: { codec: 'H.264',           bitrate: '~9.3 Mbps' },
+    mov: { codec: 'PRORES 422',      bitrate: '~45 Mbps' },
+    movAlpha: { codec: 'PRORES 4444 + α', bitrate: '~110 Mbps' },
+    mp3: { codec: 'MP3 / 320 KBPS',  bitrate: '320 kbps' },
+    wav: { codec: 'PCM 16-BIT',      bitrate: '1.5 Mbps' },
+  };
+
+  const chips = document.querySelectorAll('[data-fmt]');
+  const alphaRow = document.getElementById('alphaRow');
+  const alphaSwitch = document.getElementById('alphaSwitch');
+  const formatReadout = document.getElementById('formatReadout');
+  const bitrateVal = document.getElementById('bitrateVal');
+  const block2 = document.getElementById('block2');
+  const summary = document.getElementById('summary');
+
+  function refresh() {
+    const active = document.querySelector('[data-fmt].active');
+    const fmt = active.dataset.fmt;
+    const isMOV = fmt === 'mov';
+    const isAudio = (fmt === 'mp3' || fmt === 'wav');
+
+    alphaRow.classList.toggle('visible', isMOV);
+    block2.classList.toggle('hidden', isAudio);
+
+    const key = (isMOV && alphaSwitch.classList.contains('on')) ? 'movAlpha' : fmt;
+    const info = FORMATS[key];
+    formatReadout.textContent = info.codec;
+    bitrateVal.textContent = info.bitrate;
+
+    const fmtUpper = fmt.toUpperCase();
+    summary.innerHTML =
+      `OUTPUT <b>${fmtUpper} / ${info.codec}</b> · QUALITY <b>65</b>` +
+      (isAudio ? '' : ` · DIM <b>ORIGINAL</b> · AUDIO <b>ON</b>`);
+  }
+
+  chips.forEach(c => c.addEventListener('click', () => {
+    chips.forEach(x => x.classList.remove('active'));
+    c.classList.add('active');
+    refresh();
+  }));
+
+  alphaSwitch.addEventListener('click', (e) => {
+    e.stopPropagation();
+    alphaSwitch.classList.toggle('on');
+    refresh();
+  });
+
+  document.querySelectorAll('[data-toggle]').forEach(t => {
+    t.addEventListener('click', () => t.classList.toggle('on'));
+  });
+</script>
+</body>
+</html>

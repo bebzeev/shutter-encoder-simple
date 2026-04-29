@@ -72,40 +72,26 @@ public class Splash extends JWindow {
 	    g2.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL,
 	                        RenderingHints.VALUE_STROKE_PURE);
       
-	    g2.drawImage(splashScreen, 0, 0, this);  
-      
-	    //Shutter Encoder
-	    String text = "Shutter Encoder";
+	    g2.drawImage(splashScreen, 0, 0, this);
 
-	    g2.setColor(Color.WHITE);
-	    g2.setFont(new Font(Shutter.magnetoFont, Font.PLAIN, 18));
+	    //Shutter Encoder Simple
+	    String text = "Shutter Encoder Simple";
+
+	    g2.setColor(new Color(0x6A, 0x6E, 0x5A));  // muted ink, matches the icon
+	    g2.setFont(new Font(Shutter.boldFont, Font.PLAIN, 14));
 	    FontMetrics fm = g2.getFontMetrics();
 	    int textWidth = fm.stringWidth(text);
-	    int textHeight = fm.getHeight();
 	    int width = getWidth();
 	    int height = getHeight();
 	    int x = (width - textWidth) / 2;
-	    int y = (height - textHeight) / 2 + fm.getAscent();
+	    int y = height - 28;
 
-	    g2.drawString(text, x, y - 12);
-	    
-	    //Version
-	    text = "v" + Shutter.actualVersion;
-	    
-	    g2.setFont(new Font(Shutter.boldFont, Font.PLAIN, 16));
-	    fm = g2.getFontMetrics();
-	    textWidth = fm.stringWidth(text);
-	    textHeight = fm.getHeight();
-	    width = getWidth();
-	    height = getHeight();
-	    x = (width - textWidth) / 2;
-	    y = (height - textHeight) / 2 + fm.getAscent();
-	    
-	    g2.drawString(text, x, y + 25);
-      
-	    //Loading bar
-	    g2.drawRoundRect(26, 128, 200, 10, 10, 10);
-	    g2.fillRoundRect(26, 128, loading, 10, 10, 10);
+	    g2.drawString(text, x, y);
+
+	    //Loading bar (sage palette)
+	    g2.setColor(new Color(0x6A, 0x6E, 0x5A));
+	    g2.drawRoundRect(26, 215, 200, 6, 6, 6);
+	    g2.fillRoundRect(26, 215, loading, 6, 6, 6);
       
 	    //Progress
 	    if (System.getProperty("os.name").contains("Windows") == false)

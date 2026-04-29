@@ -222,7 +222,9 @@ public static boolean hasDolbyVision = false;
 						{
 							PathToFFPROBE = Shutter.class.getProtectionDomain().getCodeSource().getLocation().getPath();
 							PathToFFPROBE = PathToFFPROBE.substring(0,PathToFFPROBE.length()-1);
-							PathToFFPROBE = PathToFFPROBE.substring(0,(int) (PathToFFPROBE.lastIndexOf("/"))).replace("%20", "\\ ")  + "/Library/ffprobe";						
+							PathToFFPROBE = PathToFFPROBE.substring(0,(int) (PathToFFPROBE.lastIndexOf("/"))).replace("%20", "\\ ")  + "/Library/ffprobe";
+							// Escape parens for bash -c (e.g. "Dropbox (Personal)" in the path)
+							PathToFFPROBE = PathToFFPROBE.replace("(", "\\(").replace(")", "\\)");
 							
 							if (inputDeviceIsRunning && (file.equals("Capture.current.screen") || file.equals("Capture.input.device")))
 							{

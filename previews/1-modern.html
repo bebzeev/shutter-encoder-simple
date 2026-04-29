@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Shutter Simple — Modern</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0b0d12;
+    --bg-2: #14171f;
+    --card: #1a1d27;
+    --line: #262a35;
+    --text: #eef0f6;
+    --muted: #8c93a8;
+    --accent: #6d7cff;
+    --accent-2: #a26bff;
+    --accent-glow: rgba(109, 124, 255, 0.35);
+    --green: #4ade80;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background:
+      radial-gradient(1200px 600px at 80% -10%, rgba(162, 107, 255, 0.12), transparent 60%),
+      radial-gradient(900px 500px at -10% 100%, rgba(109, 124, 255, 0.10), transparent 60%),
+      var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+  }
+  .app {
+    width: 960px;
+    max-width: 100%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent), var(--bg-2);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.5);
+  }
+  .titlebar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--line);
+  }
+  .traffic { display: flex; gap: 8px; }
+  .traffic span {
+    width: 12px; height: 12px; border-radius: 50%;
+    background: #3a3e4b;
+  }
+  .traffic span:nth-child(1) { background: #ff5f57; }
+  .traffic span:nth-child(2) { background: #febc2e; }
+  .traffic span:nth-child(3) { background: #28c840; }
+  .titlebar .name {
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .titlebar .name b { color: var(--text); }
+  .body {
+    display: grid;
+    grid-template-columns: 1.15fr 1fr;
+    gap: 0;
+  }
+  .left {
+    padding: 36px 32px;
+    border-right: 1px solid var(--line);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  h1 {
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    margin: 0;
+  }
+  .subtitle {
+    color: var(--muted);
+    font-size: 14px;
+    margin: 0;
+  }
+  .drop {
+    flex: 1;
+    min-height: 240px;
+    border: 1.5px dashed var(--line);
+    border-radius: 14px;
+    background: linear-gradient(180deg, rgba(109, 124, 255, 0.04), transparent);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    padding: 24px;
+    transition: border-color .2s, background .2s;
+  }
+  .drop:hover {
+    border-color: var(--accent);
+    background: linear-gradient(180deg, rgba(109, 124, 255, 0.08), transparent);
+  }
+  .drop-icon {
+    width: 56px; height: 56px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    box-shadow: 0 12px 30px var(--accent-glow);
+    display: grid; place-items: center;
+    color: white;
+  }
+  .drop-icon svg { width: 28px; height: 28px; }
+  .drop-text { text-align: center; }
+  .drop-text .big {
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  .drop-text .small {
+    color: var(--muted);
+    font-size: 13px;
+    margin-top: 4px;
+  }
+  .browse-btn {
+    background: var(--card);
+    border: 1px solid var(--line);
+    color: var(--text);
+    padding: 9px 18px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: border-color .2s, background .2s;
+  }
+  .browse-btn:hover { border-color: var(--accent); background: rgba(109,124,255,0.08); }
+
+  .right {
+    padding: 36px 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  .right h2 {
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin: 0 0 6px 0;
+  }
+  .field { display: flex; flex-direction: column; gap: 8px; }
+  .field label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+  }
+  .field-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+  }
+  .field-row label { color: var(--text); font-size: 13px; font-weight: 500; }
+
+  select, input[type="text"] {
+    background: var(--card);
+    border: 1px solid var(--line);
+    color: var(--text);
+    padding: 10px 12px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-family: inherit;
+    width: 100%;
+    appearance: none;
+    -webkit-appearance: none;
+    transition: border-color .15s;
+  }
+  select:hover, input[type="text"]:hover { border-color: #3a3f4f; }
+  select:focus, input[type="text"]:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 4px var(--accent-glow);
+  }
+  select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238c93a8' d='M6 8L2 4h8z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 32px;
+  }
+
+  .quality-box {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 14px 16px;
+  }
+  .quality-head { display: flex; justify-content: space-between; align-items: baseline; }
+  .quality-label { font-size: 13px; font-weight: 500; }
+  .quality-value {
+    font-size: 13px;
+    font-weight: 600;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 6px;
+    background: #2a2f3d;
+    border-radius: 3px;
+    margin: 12px 0 4px;
+    outline: none;
+    background-image: linear-gradient(90deg, var(--accent), var(--accent-2));
+    background-size: 65% 100%;
+    background-repeat: no-repeat;
+  }
+  .slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: white;
+    border: 2px solid var(--accent);
+    cursor: pointer;
+    box-shadow: 0 4px 12px var(--accent-glow);
+  }
+  .meta-row {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .meta-row b { color: var(--text); font-weight: 600; }
+
+  .toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    cursor: pointer;
+  }
+  .toggle .switch {
+    width: 36px;
+    height: 20px;
+    background: #2c3144;
+    border-radius: 999px;
+    position: relative;
+    transition: background .2s;
+  }
+  .toggle .switch::after {
+    content: '';
+    position: absolute;
+    top: 2px; left: 2px;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: white;
+    transition: left .2s;
+  }
+  .toggle.on .switch {
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  }
+  .toggle.on .switch::after { left: 18px; }
+
+  .convert {
+    margin-top: 8px;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    color: white;
+    border: none;
+    padding: 16px 20px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 15px;
+    cursor: pointer;
+    box-shadow: 0 12px 30px var(--accent-glow);
+    transition: transform .15s, box-shadow .15s;
+  }
+  .convert:hover { transform: translateY(-1px); box-shadow: 0 16px 36px var(--accent-glow); }
+</style>
+</head>
+<body>
+  <div class="app">
+    <div class="titlebar">
+      <div class="traffic"><span></span><span></span><span></span></div>
+      <div class="name"><b>Shutter</b> · Simple Converter</div>
+      <div style="width: 60px"></div>
+    </div>
+
+    <div class="body">
+      <div class="left">
+        <div>
+          <h1>Convert your media.</h1>
+          <p class="subtitle">Drop files in. Pick a format. Done.</p>
+        </div>
+
+        <div class="drop">
+          <div class="drop-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+          </div>
+          <div class="drop-text">
+            <div class="big">Drop video or audio files here</div>
+            <div class="small">MP4, MOV, MKV, MP3, WAV, FLAC and more</div>
+          </div>
+          <button class="browse-btn">Browse…</button>
+        </div>
+      </div>
+
+      <div class="right">
+        <h2>Output</h2>
+
+        <div class="field">
+          <label>Format</label>
+          <select>
+            <option>MP4 (H.264) — recommended</option>
+            <option>MOV</option>
+            <option>MP3</option>
+            <option>WAV</option>
+          </select>
+        </div>
+
+        <div class="quality-box">
+          <div class="quality-head">
+            <span class="quality-label">Quality</span>
+            <span class="quality-value">High · ~9.3 Mbps</span>
+          </div>
+          <input type="range" min="0" max="100" value="65" class="slider">
+          <div class="meta-row">
+            <span>Smaller file</span>
+            <span>Estimated size: <b>—</b></span>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Dimensions</label>
+          <select>
+            <option>Keep original</option>
+            <option>3840 × 2160 (4K)</option>
+            <option>1920 × 1080 (1080p)</option>
+            <option>1280 × 720 (720p)</option>
+            <option>854 × 480</option>
+          </select>
+        </div>
+
+        <div class="toggle on">
+          <span>Include audio</span>
+          <span class="switch"></span>
+        </div>
+
+        <div class="field">
+          <label>Filename suffix</label>
+          <input type="text" value="_converted">
+        </div>
+
+        <div class="toggle on">
+          <span>Open destination when done</span>
+          <span class="switch"></span>
+        </div>
+
+        <button class="convert">Convert →</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

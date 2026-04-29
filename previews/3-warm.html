@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Shutter Simple — Warm</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #f6efe2;
+    --paper-2: #fbf5e8;
+    --ink: #2a1f17;
+    --muted: #8a7867;
+    --hair: #e6dcc8;
+    --terracotta: #c8623c;
+    --terracotta-2: #b3502d;
+    --olive: #6b7a4d;
+    --shadow: 0 10px 30px rgba(120, 90, 50, 0.08);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'Inter', system-ui, sans-serif;
+    background:
+      radial-gradient(800px 500px at 90% 10%, #f9e9cf 0%, transparent 60%),
+      radial-gradient(700px 500px at 0% 100%, #f1e2c5 0%, transparent 50%),
+      var(--paper);
+    color: var(--ink);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 24px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .app {
+    width: 880px;
+    max-width: 100%;
+    background: var(--paper-2);
+    border-radius: 24px;
+    border: 1px solid var(--hair);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+  .top {
+    padding: 28px 36px 22px;
+    background: linear-gradient(180deg, rgba(200, 98, 60, 0.04), transparent);
+    border-bottom: 1px solid var(--hair);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .logo-mark {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--terracotta), #e08660);
+    display: grid; place-items: center;
+    color: white;
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    font-size: 18px;
+    box-shadow: 0 4px 12px rgba(200, 98, 60, 0.25);
+  }
+  .logo h1 {
+    font-family: 'Fraunces', serif;
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin: 0;
+  }
+  .greeting {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 14px;
+    color: var(--muted);
+  }
+
+  .content {
+    padding: 36px;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+
+  .hello {
+    text-align: center;
+    margin-bottom: 4px;
+  }
+  .hello h2 {
+    font-family: 'Fraunces', serif;
+    font-size: 32px;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    margin: 0 0 8px 0;
+    line-height: 1.15;
+  }
+  .hello h2 em {
+    font-style: italic;
+    color: var(--terracotta);
+  }
+  .hello p {
+    color: var(--muted);
+    font-size: 14px;
+    margin: 0;
+  }
+
+  .drop {
+    background: var(--paper);
+    border: 2px dashed var(--hair);
+    border-radius: 18px;
+    padding: 36px;
+    text-align: center;
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .drop:hover {
+    border-color: var(--terracotta);
+    background: #f9efd9;
+  }
+  .drop-icon {
+    width: 52px; height: 52px;
+    border-radius: 16px;
+    background: white;
+    border: 1px solid var(--hair);
+    margin: 0 auto 14px;
+    display: grid; place-items: center;
+    box-shadow: var(--shadow);
+  }
+  .drop-icon svg { width: 26px; height: 26px; color: var(--terracotta); }
+  .drop-text {
+    font-family: 'Fraunces', serif;
+    font-size: 18px;
+    font-weight: 500;
+    margin-bottom: 4px;
+  }
+  .drop-sub {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 16px;
+  }
+  .browse {
+    display: inline-block;
+    background: white;
+    border: 1px solid var(--hair);
+    color: var(--ink);
+    padding: 9px 18px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+  }
+  .browse:hover { border-color: var(--terracotta); color: var(--terracotta); }
+
+  .settings {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+  }
+  .card {
+    background: white;
+    border: 1px solid var(--hair);
+    border-radius: 14px;
+    padding: 18px 20px;
+  }
+  .card .label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+  .card .value {
+    font-family: 'Fraunces', serif;
+    font-size: 18px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+  }
+  .card.full { grid-column: 1 / -1; }
+
+  select, input[type="text"] {
+    border: none;
+    background: transparent;
+    font-family: 'Fraunces', serif;
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--ink);
+    width: 100%;
+    appearance: none;
+    -webkit-appearance: none;
+    cursor: pointer;
+    padding: 0;
+  }
+  select { padding-right: 22px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath fill='%23c8623c' d='M5 7L1 3h8z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right center;
+  }
+  select:focus, input:focus { outline: none; }
+
+  .quality {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .quality-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  .quality-head .name { font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+  .quality-head .level {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 16px;
+    color: var(--terracotta);
+    font-weight: 500;
+  }
+  .slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 4px;
+    background: var(--hair);
+    border-radius: 999px;
+    outline: none;
+    background-image: linear-gradient(90deg, var(--terracotta), #e08660);
+    background-size: 65% 100%;
+    background-repeat: no-repeat;
+  }
+  .slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: white;
+    border: 2px solid var(--terracotta);
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(200, 98, 60, 0.3);
+  }
+  .quality-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .quality-meta b { color: var(--ink); font-weight: 600; }
+
+  .toggle-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    background: white;
+    border: 1px solid var(--hair);
+    border-radius: 12px;
+    cursor: pointer;
+  }
+  .toggle-card .name {
+    font-family: 'Fraunces', serif;
+    font-size: 15px;
+    font-weight: 500;
+  }
+  .switch {
+    width: 38px; height: 22px;
+    background: var(--hair);
+    border-radius: 999px;
+    position: relative;
+    transition: background .2s;
+  }
+  .switch::after {
+    content: '';
+    position: absolute;
+    top: 2px; left: 2px;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: white;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    transition: left .2s;
+  }
+  .toggle-card.on .switch { background: var(--terracotta); }
+  .toggle-card.on .switch::after { left: 18px; }
+
+  .convert-bar {
+    margin-top: 8px;
+    background: linear-gradient(135deg, var(--terracotta), #d97a4f);
+    color: white;
+    border: none;
+    padding: 18px 24px;
+    border-radius: 14px;
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    cursor: pointer;
+    box-shadow: 0 14px 30px rgba(200, 98, 60, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-family: 'Fraunces', serif;
+    transition: transform .15s;
+  }
+  .convert-bar:hover { transform: translateY(-1px); }
+  .convert-bar em { font-style: italic; }
+
+  .stat {
+    text-align: center;
+    color: var(--muted);
+    font-size: 13px;
+    margin-top: 6px;
+  }
+  .stat b { color: var(--ink); font-weight: 600; }
+</style>
+</head>
+<body>
+  <div class="app">
+    <div class="top">
+      <div class="logo">
+        <div class="logo-mark">S</div>
+        <h1>Shutter</h1>
+      </div>
+      <div class="greeting">welcome back</div>
+    </div>
+
+    <div class="content">
+      <div class="hello">
+        <h2>Let's <em>convert</em> something.</h2>
+        <p>Drop a file, choose a format, you're done.</p>
+      </div>
+
+      <div class="drop">
+        <div class="drop-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="17 8 12 3 7 8"/>
+            <line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+        </div>
+        <div class="drop-text">Bring your videos here</div>
+        <div class="drop-sub">Video or audio · we'll figure it out</div>
+        <button class="browse">Or browse files</button>
+      </div>
+
+      <div class="settings">
+        <div class="card">
+          <div class="label">Format</div>
+          <select class="value">
+            <option>MP4 (H.264)</option>
+            <option>MOV</option>
+            <option>MP3</option>
+            <option>WAV</option>
+          </select>
+        </div>
+
+        <div class="card">
+          <div class="label">Dimensions</div>
+          <select class="value">
+            <option>Keep original</option>
+            <option>1920 × 1080</option>
+            <option>1280 × 720</option>
+            <option>854 × 480</option>
+          </select>
+        </div>
+
+        <div class="card full">
+          <div class="quality">
+            <div class="quality-head">
+              <span class="name">Quality</span>
+              <span class="level">High · ~9.3 Mbps</span>
+            </div>
+            <input type="range" min="0" max="100" value="65" class="slider">
+            <div class="quality-meta">
+              <span>Lighter file</span>
+              <span>Estimated size: <b>—</b></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="toggle-card on">
+          <span class="name">Include audio</span>
+          <span class="switch"></span>
+        </div>
+
+        <div class="toggle-card on">
+          <span class="name">Open folder when done</span>
+          <span class="switch"></span>
+        </div>
+
+        <div class="card full">
+          <div class="label">Filename suffix</div>
+          <input type="text" value="_converted" class="value">
+        </div>
+      </div>
+
+      <button class="convert-bar">Start <em>converting</em> →</button>
+      <div class="stat"><b>0 files</b> ready · ready when you are</div>
+    </div>
+  </div>
+</body>
+</html>

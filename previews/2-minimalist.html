@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Shutter Simple — Minimalist</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #ffffff;
+    --ink: #0a0a0a;
+    --muted: #767676;
+    --hair: #e8e8e8;
+    --soft: #f6f6f6;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 24px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .app {
+    width: 920px;
+    max-width: 100%;
+  }
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 56px;
+  }
+  .brand {
+    font-family: 'Instrument Serif', serif;
+    font-size: 32px;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    line-height: 1;
+  }
+  .brand i {
+    font-style: italic;
+    color: var(--muted);
+  }
+  nav {
+    font-size: 13px;
+    color: var(--muted);
+    letter-spacing: 0.02em;
+  }
+
+  .columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+  }
+
+  .col-label {
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--muted);
+    margin: 0 0 24px 0;
+  }
+
+  .drop {
+    border-top: 1px solid var(--ink);
+    border-bottom: 1px solid var(--hair);
+    padding: 56px 0;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color .2s;
+  }
+  .drop:hover { border-bottom-color: var(--ink); }
+  .drop .arrow {
+    font-size: 40px;
+    line-height: 1;
+    margin-bottom: 18px;
+    color: var(--ink);
+  }
+  .drop .headline {
+    font-family: 'Instrument Serif', serif;
+    font-size: 26px;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    margin-bottom: 8px;
+  }
+  .drop .sub {
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .drop .browse {
+    margin-top: 20px;
+    display: inline-block;
+    font-size: 13px;
+    border-bottom: 1px solid var(--ink);
+    padding-bottom: 2px;
+  }
+
+  .empty-state {
+    margin-top: 32px;
+    font-size: 13px;
+    color: var(--muted);
+    text-align: center;
+  }
+
+  .row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 0;
+    border-bottom: 1px solid var(--hair);
+  }
+  .row:last-of-type { border-bottom: none; }
+  .row .key {
+    font-size: 13px;
+    font-weight: 500;
+  }
+  .row .val {
+    font-size: 13px;
+    color: var(--muted);
+    text-align: right;
+  }
+  .row select, .row input {
+    border: none;
+    background: transparent;
+    text-align: right;
+    font-size: 13px;
+    color: var(--ink);
+    font-family: inherit;
+    appearance: none;
+    -webkit-appearance: none;
+    cursor: pointer;
+    padding-right: 14px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 8 8'%3E%3Cpath fill='%23767676' d='M4 6L0 2h8z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right center;
+  }
+  .row input { background-image: none; padding-right: 0; }
+  .row select:focus, .row input:focus { outline: none; color: var(--ink); }
+
+  .quality-block {
+    padding: 20px 0;
+    border-bottom: 1px solid var(--hair);
+  }
+  .quality-block .label-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .quality-block .label-row .key { font-size: 13px; font-weight: 500; }
+  .quality-block .label-row .val {
+    font-size: 13px;
+    color: var(--ink);
+  }
+  .slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 1px;
+    background: var(--hair);
+    outline: none;
+  }
+  .slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--ink);
+    cursor: pointer;
+  }
+  .scale {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+  }
+  .summary {
+    margin-top: 12px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .check {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+  }
+  .box {
+    width: 14px; height: 14px;
+    border: 1px solid var(--ink);
+    display: inline-grid;
+    place-items: center;
+  }
+  .box.on::after {
+    content: '';
+    width: 6px; height: 6px;
+    background: var(--ink);
+  }
+
+  .convert {
+    margin-top: 48px;
+    width: 100%;
+    background: var(--ink);
+    color: white;
+    border: none;
+    padding: 18px;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    transition: background .15s;
+  }
+  .convert:hover { background: #2a2a2a; }
+
+  footer {
+    margin-top: 80px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+  }
+</style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div class="brand">Shutter <i>Simple</i></div>
+      <nav>v20.0</nav>
+    </header>
+
+    <div class="columns">
+      <section>
+        <p class="col-label">Files</p>
+        <div class="drop">
+          <div class="arrow">↓</div>
+          <div class="headline">Drop files here</div>
+          <div class="sub">Video or audio</div>
+          <div class="browse">or browse</div>
+        </div>
+        <div class="empty-state">No files queued</div>
+      </section>
+
+      <section>
+        <p class="col-label">Output</p>
+
+        <div class="row">
+          <span class="key">Format</span>
+          <select class="val">
+            <option>MP4 (H.264)</option>
+            <option>MOV</option>
+            <option>MP3</option>
+            <option>WAV</option>
+          </select>
+        </div>
+
+        <div class="quality-block">
+          <div class="label-row">
+            <span class="key">Quality</span>
+            <span class="val">High</span>
+          </div>
+          <input type="range" min="0" max="100" value="65" class="slider">
+          <div class="scale">
+            <span>SMALL</span>
+            <span>LARGE</span>
+          </div>
+          <div class="summary">~9.3 Mbps · est. file size —</div>
+        </div>
+
+        <div class="row">
+          <span class="key">Dimensions</span>
+          <select class="val">
+            <option>Keep original</option>
+            <option>3840 × 2160</option>
+            <option>1920 × 1080</option>
+            <option>1280 × 720</option>
+            <option>854 × 480</option>
+          </select>
+        </div>
+
+        <div class="row">
+          <span class="key">Audio</span>
+          <label class="check">
+            <span class="box on"></span>
+            <span style="font-size: 13px; color: var(--muted);">Include</span>
+          </label>
+        </div>
+
+        <div class="row">
+          <span class="key">Suffix</span>
+          <input type="text" value="_converted" class="val" style="width: 140px;">
+        </div>
+
+        <div class="row">
+          <span class="key">When done</span>
+          <label class="check">
+            <span class="box on"></span>
+            <span style="font-size: 13px; color: var(--muted);">Open folder</span>
+          </label>
+        </div>
+
+        <button class="convert">Convert</button>
+      </section>
+    </div>
+
+    <footer>
+      <span>READY</span>
+      <span>0 FILES</span>
+    </footer>
+  </div>
+</body>
+</html>

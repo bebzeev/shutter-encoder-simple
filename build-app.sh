@@ -22,9 +22,9 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$SCRIPT_DIR"
 
-APP_NAME="Shutter Encoder"
-BUNDLE_ID="com.shutterencoder.app"
-VERSION="20.0"
+APP_NAME="Shutter Encoder Simple"
+BUNDLE_ID="com.shutterencoder.simple"
+VERSION="1.0"
 MAIN_CLASS="application.Shutter"
 
 BUILD_DIR="$SCRIPT_DIR/build"
@@ -143,6 +143,16 @@ cat > "$CONTENTS/Info.plist" <<PLIST
     <true/>
     <key>NSSupportsAutomaticGraphicsSwitching</key>
     <true/>
+    <key>NSDesktopFolderUsageDescription</key>
+    <string>Read and convert media files from Desktop.</string>
+    <key>NSDocumentsFolderUsageDescription</key>
+    <string>Read and convert media files from Documents.</string>
+    <key>NSDownloadsFolderUsageDescription</key>
+    <string>Read and convert media files from Downloads.</string>
+    <key>NSRemovableVolumesUsageDescription</key>
+    <string>Read and convert media files from external drives.</string>
+    <key>NSCameraUsageDescription</key>
+    <string>Required by AVFoundation for HDR-to-SDR colorspace conversion.</string>
     <key>CFBundleDocumentTypes</key>
     <array>
         <dict>
@@ -212,6 +222,47 @@ chmod +x "$MACOS_DIR/launcher"
 
 if [ -f "config.properties" ]; then
     cp config.properties "$JAVA_DIR/"
+fi
+
+# ── Compile Swift HDR helper ────────────────────────────────────────────────
+# This native Mach-O does HDR→SDR via AVAssetExportSession. Bundling it inside
+# the .app gives Strip HDR a path that doesn't depend on /usr/bin/avconvert,
+# which fails when invoked from a Java subprocess (no Cocoa drag-drop TCC).
+
+SDR_HELPER_SRC="$SCRIPT_DIR/helper-src/sdr-helper.swift"
+SDR_HELPER_BIN="$MACOS_DIR/sdr-helper"
+
+if [ -f "$SDR_HELPER_SRC" ]; then
+    if command -v xcrun &>/dev/null; then
+        echo "==> Compiling Swift sdr-helper..."
+        xcrun swiftc -O -o "$SDR_HELPER_BIN" "$SDR_HELPER_SRC" 2>/dev/null || {
+            echo "  ⚠ Failed to compile sdr-helper. Strip HDR will be unavailable."
+            rm -f "$SDR_HELPER_BIN"
+        }
+        if [ -f "$SDR_HELPER_BIN" ]; then
+            chmod +x "$SDR_HELPER_BIN"
+        fi
+    else
+        echo "  ⚠ xcrun not found; skipping sdr-helper compile."
+    fi
+fi
+
+# ── Ad-hoc sign on macOS ────────────────────────────────────────────────────
+# Apple Silicon requires signed Mach-O binaries to execute. Sign every native
+# binary inside the bundle, then sign the app itself.
+
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    echo "==> Ad-hoc signing native binaries and app bundle..."
+    # Strip quarantine attrs that get added when binaries are downloaded
+    xattr -cr "$APP_DIR" 2>/dev/null || true
+    # Sign every Mach-O inside the bundle
+    find "$APP_DIR" -type f \( -name "ffmpeg" -o -name "ffprobe" -o -name "yt-dlp*" -o -name "sdr-helper" -o -name "*.dylib" \) -print0 \
+        | xargs -0 -n1 -I{} codesign --force --options runtime --timestamp=none -s - "{}" 2>/dev/null || true
+    # Sign the JRE's java launcher and any of its bundled dylibs
+    find "$APP_DIR/Contents/JRE" -type f \( -perm +111 -o -name "*.dylib" \) -print0 2>/dev/null \
+        | xargs -0 -n1 -I{} codesign --force -s - "{}" 2>/dev/null || true
+    # Sign the whole app last so the seal includes everything
+    codesign --force --deep -s - "$APP_DIR" 2>/dev/null || true
 fi
 
 # ── Done ────────────────────────────────────────────────────────────────────

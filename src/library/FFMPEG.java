@@ -162,7 +162,9 @@ public static StringBuilder errorLog = new StringBuilder();
 		else
 		{
 			PathToFFMPEG = PathToFFMPEG.substring(0,PathToFFMPEG.length()-1);
-			PathToFFMPEG = PathToFFMPEG.substring(0,(int) (PathToFFMPEG.lastIndexOf("/"))).replace("%20", "\\ ")  + "/Library/ffmpeg";	
+			PathToFFMPEG = PathToFFMPEG.substring(0,(int) (PathToFFMPEG.lastIndexOf("/"))).replace("%20", "\\ ")  + "/Library/ffmpeg";
+			// Escape parens too — paths like "Dropbox (Personal)" otherwise break bash -c
+			PathToFFMPEG = PathToFFMPEG.replace("(", "\\(").replace(")", "\\)");
 		}
 		
 		if (Settings.btnCustomFFmpegPath.isSelected() && Settings.txtCustomFFmpegPath.getText().equals("") == false)

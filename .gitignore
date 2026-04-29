@@ -1,0 +1,14 @@
+# macOS
+.DS_Store
+
+# Build output
+build/
+dist/
+
+# Bundled JRE (regenerate via the jlink command in build-app.sh)
+JRE/
+
+# IDE
+.idea/
+*.iml
+.vscode/

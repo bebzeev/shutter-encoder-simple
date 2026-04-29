@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Shutter Simple — Sage Spec</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper:   #dde3cb;
+    --paper-2: #e6ecd5;
+    --ink:     #111111;
+    --muted:   #6a6e5a;
+    --hair:    #1a1a1a;
+    --soft:    #c8cfb3;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 24px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .mono { font-family: 'Space Mono', monospace; }
+
+  .app {
+    width: 880px;
+    max-width: 100%;
+    background: var(--paper);
+    border: 1.5px solid var(--hair);
+    border-radius: 24px;
+    padding: 32px 36px 28px;
+  }
+
+  /* header */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding-bottom: 22px;
+    border-bottom: 1.5px solid var(--hair);
+    margin-bottom: 24px;
+  }
+  .header h1 {
+    font-size: 32px;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    margin: 0;
+    line-height: 1;
+  }
+  .header .meta {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    text-align: right;
+    line-height: 1.5;
+  }
+  .header .meta .top { font-weight: 700; letter-spacing: 0.04em; }
+  .header .meta .sub { color: var(--muted); }
+
+  /* drop zone */
+  .drop {
+    border: 1.5px solid var(--hair);
+    border-radius: 18px;
+    padding: 32px;
+    display: grid;
+    grid-template-columns: 80px 1fr auto;
+    align-items: center;
+    gap: 20px;
+    cursor: pointer;
+    background:
+      repeating-linear-gradient(
+        135deg,
+        transparent 0,
+        transparent 12px,
+        rgba(17, 17, 17, 0.04) 12px,
+        rgba(17, 17, 17, 0.04) 13px
+      ),
+      var(--paper);
+    transition: background-color .2s, border-color .2s;
+  }
+  .drop:hover { background-color: var(--paper-2); }
+  .drop .icon {
+    width: 64px; height: 64px;
+    border: 1.5px solid var(--hair);
+    border-radius: 50%;
+    display: grid; place-items: center;
+    background: var(--paper);
+  }
+  .drop .icon svg { width: 28px; height: 28px; }
+  .drop .text .big {
+    font-size: 22px;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+  .drop .text .small {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 4px;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+  .browse-btn {
+    border: 1.5px solid var(--hair);
+    background: var(--paper);
+    color: var(--ink);
+    border-radius: 999px;
+    padding: 10px 20px;
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+  }
+  .browse-btn:hover { background: var(--ink); color: var(--paper); }
+
+  /* spec rows */
+  .specs {
+    margin-top: 6px;
+  }
+  .spec {
+    display: grid;
+    grid-template-columns: 140px 1fr auto;
+    align-items: center;
+    padding: 18px 0;
+    border-bottom: 1.5px solid var(--hair);
+    gap: 18px;
+  }
+  .spec .key {
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .spec .control { display: flex; align-items: center; gap: 14px; min-height: 32px; }
+
+  /* chips */
+  .chips {
+    display: flex;
+    gap: 6px;
+  }
+  .chip {
+    border: 1.5px solid var(--hair);
+    border-radius: 999px;
+    padding: 7px 16px;
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    background: var(--paper);
+  }
+  .chip.active { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+
+  /* spec value (right-aligned readout) */
+  .spec .readout {
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    color: var(--muted);
+    text-align: right;
+    letter-spacing: 0.02em;
+  }
+
+  /* quality slider with ticks */
+  .slider-wrap {
+    flex: 1;
+    position: relative;
+    padding: 0 4px;
+  }
+  .slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 1.5px;
+    background: var(--hair);
+    outline: none;
+  }
+  .slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: var(--ink);
+    cursor: pointer;
+    border: 1.5px solid var(--ink);
+  }
+  .ticks {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 6px;
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+  }
+
+  /* stepper for dimensions */
+  .stepper-row { display: flex; gap: 8px; align-items: center; }
+  .step-btn {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    border: 1.5px solid var(--hair);
+    background: var(--paper);
+    cursor: pointer;
+    display: grid; place-items: center;
+  }
+  .step-btn svg { width: 12px; height: 12px; }
+  .step-val {
+    font-family: 'Space Mono', monospace;
+    font-size: 14px;
+    font-weight: 700;
+    min-width: 110px;
+    text-align: center;
+  }
+
+  /* select-as-text */
+  .text-select {
+    border: none;
+    background: transparent;
+    font-family: 'Space Mono', monospace;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--ink);
+    appearance: none;
+    -webkit-appearance: none;
+    padding-right: 20px;
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath fill='%23111' d='M5 7L1 3h8z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right center;
+  }
+  .text-input {
+    border: 1.5px solid var(--hair);
+    background: var(--paper);
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ink);
+    outline: none;
+    width: 200px;
+  }
+
+  /* toggle */
+  .toggle {
+    width: 70px; height: 30px;
+    border: 1.5px solid var(--hair);
+    border-radius: 999px;
+    position: relative;
+    cursor: pointer;
+    background: var(--paper);
+  }
+  .toggle::after {
+    content: '';
+    position: absolute;
+    top: 2px; left: 2px;
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: var(--paper);
+    border: 1.5px solid var(--hair);
+    transition: left .2s;
+  }
+  .toggle .label-on, .toggle .label-off {
+    position: absolute;
+    top: 50%; transform: translateY(-50%);
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+  }
+  .toggle .label-off { right: 8px; color: var(--ink); }
+  .toggle .label-on  { left: 8px; color: var(--paper); display: none; }
+  .toggle.on { background: var(--ink); }
+  .toggle.on::after { left: 42px; background: var(--paper); }
+  .toggle.on .label-off { display: none; }
+  .toggle.on .label-on  { display: block; }
+
+  /* footer area */
+  .footer {
+    margin-top: 24px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 16px;
+    align-items: center;
+  }
+  .summary {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    line-height: 1.6;
+  }
+  .summary b { color: var(--ink); font-weight: 700; }
+
+  .convert {
+    background: var(--ink);
+    color: var(--paper);
+    border: 1.5px solid var(--ink);
+    border-radius: 999px;
+    padding: 18px 40px;
+    font-family: 'Space Mono', monospace;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+  .convert:hover { background: #2a2a2a; }
+</style>
+</head>
+<body>
+  <div class="app">
+    <div class="header">
+      <h1>Shutter Simple</h1>
+      <div class="meta">
+        <div class="top">v20.0</div>
+        <div class="sub">IDLE · 0 FILES</div>
+      </div>
+    </div>
+
+    <div class="drop">
+      <div class="icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="17 8 12 3 7 8"/>
+          <line x1="12" y1="3" x2="12" y2="15"/>
+        </svg>
+      </div>
+      <div class="text">
+        <div class="big">Drop files here</div>
+        <div class="small">VIDEO / AUDIO · MP4 MOV MKV MP3 WAV FLAC</div>
+      </div>
+      <button class="browse-btn">BROWSE</button>
+    </div>
+
+    <div class="specs">
+      <div class="spec">
+        <div class="key">Format</div>
+        <div class="control">
+          <div class="chips">
+            <div class="chip active">MP4</div>
+            <div class="chip">MOV</div>
+            <div class="chip">MP3</div>
+            <div class="chip">WAV</div>
+          </div>
+        </div>
+        <div class="readout">H.264 / yuv420p</div>
+      </div>
+
+      <div class="spec">
+        <div class="key">Quality</div>
+        <div class="control">
+          <div class="slider-wrap">
+            <input type="range" min="0" max="100" value="65" class="slider">
+            <div class="ticks">
+              <span>LOW</span>
+              <span>MEDIUM</span>
+              <span>HIGH</span>
+              <span>MAX</span>
+            </div>
+          </div>
+        </div>
+        <div class="readout">65 / 100</div>
+      </div>
+
+      <div class="spec">
+        <div class="key">Bitrate</div>
+        <div class="control">
+          <div class="step-val" style="text-align: left; min-width: 0;">~9.3 Mbps</div>
+        </div>
+        <div class="readout">EST. SIZE —</div>
+      </div>
+
+      <div class="spec">
+        <div class="key">Dimensions</div>
+        <div class="control">
+          <div class="stepper-row">
+            <button class="step-btn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </button>
+            <div class="step-val">KEEP ORIGINAL</div>
+            <button class="step-btn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="5" y1="12" x2="19" y2="12"/><line x1="12" y1="5" x2="12" y2="19"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="readout">1920×1080 · 1280×720 · 854×480</div>
+      </div>
+
+      <div class="spec">
+        <div class="key">Audio</div>
+        <div class="control">
+          <span class="mono" style="font-size: 14px; font-weight: 700;">INCLUDE</span>
+        </div>
+        <div class="toggle on"><span class="label-on">ON</span><span class="label-off">OFF</span></div>
+      </div>
+
+      <div class="spec">
+        <div class="key">Suffix</div>
+        <div class="control">
+          <input type="text" class="text-input" value="_converted">
+        </div>
+        <div class="readout">FILENAME APPEND</div>
+      </div>
+
+      <div class="spec">
+        <div class="key">Destination</div>
+        <div class="control">
+          <select class="text-select">
+            <option>SAME AS SOURCE</option>
+            <option>CHOOSE FOLDER…</option>
+          </select>
+        </div>
+        <div class="readout">OUTPUT PATH</div>
+      </div>
+
+      <div class="spec">
+        <div class="key">Open Folder</div>
+        <div class="control">
+          <span class="mono" style="font-size: 14px; font-weight: 700;">WHEN DONE</span>
+        </div>
+        <div class="toggle on"><span class="label-on">ON</span><span class="label-off">OFF</span></div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <div class="summary">
+        OUTPUT: <b>MP4 / H.264</b> · QUALITY <b>65</b> · <b>9.3 Mbps</b> · DIM <b>ORIGINAL</b> · AUDIO <b>ON</b>
+      </div>
+      <button class="convert">Convert</button>
+    </div>
+  </div>
+</body>
+</html>

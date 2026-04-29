@@ -777,8 +777,8 @@ public class Shutter {
 		//JVM args
 		Utils.loadConfig();
 		
-		// Splashscreen
-		new Splash();
+		// Splash screen disabled — SimpleFrame opens directly.
+		// (Splash.increment() static calls elsewhere are no-ops since no splash is rendered.)
 		
 		System.setProperty("awt.useSystemAAFontSettings", "on");
 		System.setProperty("apple.awt.textAntialiasing", "on");
@@ -848,6 +848,12 @@ public class Shutter {
 		}
 
 		new Shutter();
+
+		// Launch the simplified UI; the legacy Shutter window stays hidden in the background.
+		javax.swing.SwingUtilities.invokeLater(() -> {
+			Shutter.frame.setVisible(false);
+			new SimpleFrame();
+		});
 
 		ImageIO.setUseCache(false); // IMPORTANT use RAM instead of HDD cache
 	}
@@ -1631,6 +1637,18 @@ public class Shutter {
 			}
 		}
 
+		// Simplified mode: auto-select Simple converter, hide all function-picker chrome
+		comboFonctions.setSelectedItem(language.getProperty("simpleEncoder"));
+		comboFonctions.setVisible(false);
+		iconList.setVisible(false);
+		iconPresets.setVisible(false);
+		lblFilter.setVisible(false);
+		comboFilter.setVisible(false);
+
+		// Simplified mode: hide the legacy UI off-screen so the splash dismisses
+		// (Splash.java polls Shutter.frame.isVisible) without the user ever seeing it.
+		frame.setLocation(-100000, -100000);
+		frame.setSize(1, 1);
 		Utils.changeFrameVisibility(frame, false);
 		btnStart.requestFocus();
 
@@ -3200,7 +3218,7 @@ public class Shutter {
 		grpChooseFunction.setBackground(Utils.c30);
 		grpChooseFunction.setBorder(BorderFactory.createTitledBorder(
 				new FlatLineBorder(new Insets(0, 0, 0, 0), Utils.c42, 1, 10) ,
-				language.getProperty("grpChooseFunction") + " ", 0, 0, new Font(boldFont, Font.PLAIN, 13),
+				language.getProperty("simpleEncoder") + " ", 0, 0, new Font(boldFont, Font.PLAIN, 13),
 				new Color(235, 235, 240)));
 
 		frame.getContentPane().add(grpChooseFunction);
@@ -3897,59 +3915,8 @@ public class Shutter {
 		});
 
 		functionsList = new ArrayList<>(Arrays.asList(
-
-			    language.getProperty("itemSimpleEncoder"), language.getProperty("simpleEncoder"),
-
-			    language.getProperty("itemAITools"), language.getProperty("functionSeparation"), language.getProperty("functionTranscribe"),
-			    language.getProperty("functionTranslate"), language.getProperty("functionColorize"), language.getProperty("functionBlurFaces"),
-			    language.getProperty("functionBackgroundRemover"),
-
-			    language.getProperty("itemNoConversion"), language.getProperty("functionCut"),
-			    language.getProperty("functionReplaceAudio"), language.getProperty("functionRewrap"),
-			    language.getProperty("functionConform"), language.getProperty("functionMerge"),
-			    language.getProperty("functionExtract"), language.getProperty("functionSubtitles"),
-			    language.getProperty("functionInsert"),
-
-			    language.getProperty("itemAudioConversion"), "WAV", "AIFF", "FLAC", "ALAC", "MP3", "AAC", "AC3", "Opus",
-			    "Vorbis", "Dolby Digital Plus", "Dolby TrueHD",
-
-			    language.getProperty("itemEditingCodecs"), "DNxHD", "DNxHR", "Apple ProRes", "QT Animation",
-			    "GoPro CineForm", "Uncompressed",
-
-			    language.getProperty("itemOuputCodecs"), "H.264", "H.265", "H.266", "VP8", "VP9", "AV1",
-
-			    language.getProperty("itemBroadcastCodecs"), "XDCAM HD422", "XDCAM HD 35", "AVC-Intra 100", "XAVC", "XAVC Long GOP", "HAP",
-
-			    language.getProperty("itemOldCodecs"), "Theora", "MPEG-2", "MJPEG", "Xvid", "DV", "WMV", "MPEG-1",
-
-			    language.getProperty("itemArchiveCodecs"), "FFV1",
-
-			    language.getProperty("itemImage"), "JPEG", "JPEG XL", language.getProperty("functionPicture"),
-
-			    language.getProperty("itemBurnRip"), "DVD", "Blu-ray", "DVD Rip",
-
-			    language.getProperty("itemAnalyze"), "Loudness & True Peak",
-			    language.getProperty("functionNormalization"), language.getProperty("functionSceneDetection"),
-			    language.getProperty("functionBlackDetection"), language.getProperty("functionOfflineDetection"),
-			    "VMAF", "FrameMD5",
-
-			    language.getProperty("itemDownload"), language.getProperty("functionWeb")
-			));  
-		
-		if (System.getProperty("os.name").contains("Mac") && arch.equals("x86_64"))
-		{
-			functionsList.remove("H.266");
-		    functionsList.remove(language.getProperty("functionTranscribe"));
-		    functionsList.remove(language.getProperty("functionBlurFaces"));
-		}
-		else if (System.getProperty("os.name").contains("Linux"))
-		{
-			functionsList.remove(language.getProperty("functionTranscribe"));
-			functionsList.remove(language.getProperty("functionBlurFaces"));
-			
-		}
-		
-		functionsList.add("- " + language.getProperty("btnManage").toUpperCase() + " -");
+			    language.getProperty("simpleEncoder")
+			));
 
 		comboFonctions = new JComboBox<String[]>();
 		comboFonctions.setName("comboFonctions");
@@ -3961,6 +3928,7 @@ public class Shutter {
 		comboFonctions.setBounds(8, 19, 168, 22);
 		comboFonctions.getModel().setSelectedItem("");
 		comboFonctions.setRenderer(new ComboBoxRenderer());
+		comboFonctions.setVisible(false);
 		grpChooseFunction.add(comboFonctions);
 		
 		comboFonctions.addActionListener(new ActionListener() {

@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Shutter Simple — Aurora Glass</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #ffffff;
+    --muted: rgba(255, 255, 255, 0.62);
+    --hair: rgba(255, 255, 255, 0.14);
+    --glass: rgba(255, 255, 255, 0.06);
+    --glass-strong: rgba(255, 255, 255, 0.1);
+    --pink: #ff6ec7;
+    --purple: #9b6dff;
+    --cyan: #5ee7ff;
+    --green: #76ffb0;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    color: var(--ink);
+    min-height: 100vh;
+    overflow: hidden;
+    background: #050514;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Aurora background */
+  .aurora {
+    position: fixed; inset: 0;
+    overflow: hidden;
+    z-index: 0;
+  }
+  .aurora::before, .aurora::after, .aurora .blob {
+    content: '';
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(90px);
+    opacity: 0.7;
+  }
+  .aurora::before {
+    width: 700px; height: 700px;
+    background: radial-gradient(circle, var(--pink), transparent 60%);
+    top: -200px; left: -150px;
+  }
+  .aurora::after {
+    width: 800px; height: 800px;
+    background: radial-gradient(circle, var(--purple), transparent 60%);
+    bottom: -250px; right: -200px;
+  }
+  .aurora .blob {
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, var(--cyan), transparent 60%);
+    top: 30%; left: 50%;
+    transform: translate(-50%, -50%);
+    opacity: 0.5;
+  }
+  .grain {
+    position: fixed; inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    opacity: 0.06;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/></filter><rect width='200' height='200' filter='url(%23n)' opacity='1'/></svg>");
+  }
+
+  .stage {
+    position: relative;
+    z-index: 2;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+  }
+
+  .app {
+    width: 1000px;
+    max-width: 100%;
+    background: var(--glass);
+    backdrop-filter: blur(40px) saturate(150%);
+    -webkit-backdrop-filter: blur(40px) saturate(150%);
+    border: 1px solid var(--hair);
+    border-radius: 28px;
+    overflow: hidden;
+    box-shadow:
+      0 30px 80px rgba(0, 0, 0, 0.5),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  }
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 22px 32px;
+    border-bottom: 1px solid var(--hair);
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 700;
+    font-size: 16px;
+    letter-spacing: -0.01em;
+  }
+  .logo .dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--cyan), var(--purple));
+    box-shadow: 0 0 12px var(--cyan);
+  }
+  .pill {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    border: 1px solid var(--hair);
+    padding: 5px 10px;
+    border-radius: 999px;
+    letter-spacing: 0.06em;
+  }
+
+  .body { padding: 36px; }
+
+  .hero {
+    text-align: center;
+    margin-bottom: 28px;
+  }
+  .hero h1 {
+    font-size: 44px;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+    margin: 0 0 10px 0;
+    background: linear-gradient(120deg, #ffffff 30%, #b9a4ff 60%, #5ee7ff 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .hero p {
+    font-size: 15px;
+    color: var(--muted);
+    margin: 0;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+    gap: 18px;
+    margin-top: 28px;
+  }
+
+  .panel {
+    background: var(--glass-strong);
+    border: 1px solid var(--hair);
+    border-radius: 20px;
+    padding: 22px;
+    position: relative;
+    overflow: hidden;
+  }
+  .panel::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.08), transparent 50%);
+    pointer-events: none;
+  }
+  .panel > * { position: relative; }
+
+  .panel .label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+
+  .drop-panel {
+    grid-row: 1 / 3;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    min-height: 280px;
+    cursor: pointer;
+    transition: border-color .25s, background .25s;
+  }
+  .drop-panel:hover {
+    border-color: var(--cyan);
+    background: rgba(94, 231, 255, 0.05);
+  }
+  .drop-circle {
+    width: 88px; height: 88px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--purple), var(--pink));
+    display: grid; place-items: center;
+    margin-bottom: 18px;
+    box-shadow:
+      0 0 50px rgba(155, 109, 255, 0.45),
+      inset 0 0 0 1px rgba(255,255,255,0.2);
+  }
+  .drop-circle svg { width: 36px; height: 36px; color: white; }
+  .drop-panel .big {
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin-bottom: 6px;
+  }
+  .drop-panel .small {
+    color: var(--muted);
+    font-size: 13px;
+    margin-bottom: 16px;
+  }
+  .browse-btn {
+    background: rgba(255,255,255,0.12);
+    border: 1px solid var(--hair);
+    color: white;
+    padding: 9px 18px;
+    border-radius: 999px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    backdrop-filter: blur(20px);
+  }
+  .browse-btn:hover { background: rgba(255,255,255,0.2); }
+
+  /* Format chips */
+  .chips {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+  }
+  .chip {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--hair);
+    border-radius: 12px;
+    padding: 14px 8px;
+    text-align: center;
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .chip .name { font-size: 13px; font-weight: 600; }
+  .chip .ext { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted); margin-top: 4px; letter-spacing: 0.05em; }
+  .chip.active {
+    background: linear-gradient(135deg, rgba(155, 109, 255, 0.3), rgba(94, 231, 255, 0.2));
+    border-color: var(--cyan);
+    box-shadow:
+      0 0 20px rgba(94, 231, 255, 0.25),
+      inset 0 0 0 1px rgba(255,255,255,0.15);
+  }
+  .chip.active .ext { color: white; opacity: 0.8; }
+
+  /* Quality */
+  .quality-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 14px;
+  }
+  .quality-head .name {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .quality-head .num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--cyan);
+  }
+  .slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 4px;
+    background: rgba(255,255,255,0.12);
+    border-radius: 999px;
+    outline: none;
+    background-image: linear-gradient(90deg, var(--cyan), var(--purple), var(--pink));
+    background-size: 65% 100%;
+    background-repeat: no-repeat;
+  }
+  .slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: white;
+    cursor: pointer;
+    box-shadow: 0 0 18px var(--cyan);
+  }
+  .stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 14px;
+  }
+  .stat-mini {
+    background: rgba(0,0,0,0.2);
+    border: 1px solid var(--hair);
+    padding: 10px 12px;
+    border-radius: 10px;
+  }
+  .stat-mini .k { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--muted); letter-spacing: 0.18em; text-transform: uppercase; }
+  .stat-mini .v { font-size: 14px; font-weight: 600; margin-top: 4px; }
+
+  /* Bottom row */
+  .bottom-row {
+    margin-top: 18px;
+    display: grid;
+    grid-template-columns: 1.2fr 1fr 1fr;
+    gap: 12px;
+  }
+  .input-glass {
+    background: rgba(0,0,0,0.2);
+    border: 1px solid var(--hair);
+    border-radius: 12px;
+    padding: 12px 14px;
+  }
+  .input-glass .lbl {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .input-glass select, .input-glass input {
+    background: transparent;
+    border: none;
+    color: white;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    width: 100%;
+    appearance: none;
+    -webkit-appearance: none;
+    padding-right: 16px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath fill='white' d='M5 7L1 3h8z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right center;
+  }
+  .input-glass input { background-image: none; padding-right: 0; }
+  .input-glass select:focus, .input-glass input:focus { outline: none; }
+
+  .toggle-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 12px;
+  }
+  .toggle-pill {
+    flex: 1;
+    background: rgba(0,0,0,0.2);
+    border: 1px solid var(--hair);
+    border-radius: 999px;
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    font-size: 13px;
+  }
+  .toggle-pill.on {
+    background: rgba(94, 231, 255, 0.12);
+    border-color: var(--cyan);
+    color: white;
+  }
+  .toggle-pill .switch {
+    width: 30px; height: 18px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 999px;
+    position: relative;
+    transition: background .2s;
+  }
+  .toggle-pill .switch::after {
+    content: '';
+    position: absolute;
+    top: 2px; left: 2px;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: white;
+    transition: left .2s;
+  }
+  .toggle-pill.on .switch { background: var(--cyan); }
+  .toggle-pill.on .switch::after { left: 14px; }
+
+  .convert {
+    margin-top: 22px;
+    width: 100%;
+    background: linear-gradient(90deg, var(--cyan) 0%, var(--purple) 50%, var(--pink) 100%);
+    background-size: 200% 100%;
+    color: #0a0a14;
+    border: none;
+    padding: 18px;
+    border-radius: 16px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    cursor: pointer;
+    box-shadow:
+      0 0 40px rgba(155, 109, 255, 0.35),
+      0 14px 30px rgba(0,0,0,0.3);
+    transition: background-position .4s, transform .15s;
+  }
+  .convert:hover { background-position: 100% 0; transform: translateY(-1px); }
+
+  .footer {
+    margin-top: 14px;
+    display: flex;
+    justify-content: space-between;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+  }
+  .status-led {
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 10px var(--green);
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+</style>
+</head>
+<body>
+  <div class="aurora"><div class="blob"></div></div>
+  <div class="grain"></div>
+
+  <div class="stage">
+    <div class="app">
+      <div class="header">
+        <div class="logo">
+          <span class="dot"></span>
+          SHUTTER / SIMPLE
+        </div>
+        <div class="pill">v20.0 · MAC</div>
+      </div>
+
+      <div class="body">
+        <div class="hero">
+          <h1>Convert anything.<br>Effortlessly.</h1>
+          <p>One file, one format, one click.</p>
+        </div>
+
+        <div class="grid">
+          <div class="panel drop-panel">
+            <div class="drop-circle">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/>
+                <line x1="12" y1="3" x2="12" y2="15"/>
+              </svg>
+            </div>
+            <div class="big">Drop files here</div>
+            <div class="small">Video · Audio · Anywhere</div>
+            <button class="browse-btn">Or browse…</button>
+          </div>
+
+          <div class="panel">
+            <div class="label">Format</div>
+            <div class="chips">
+              <div class="chip active">
+                <div class="name">MP4</div>
+                <div class="ext">H.264</div>
+              </div>
+              <div class="chip">
+                <div class="name">MOV</div>
+                <div class="ext">.mov</div>
+              </div>
+              <div class="chip">
+                <div class="name">MP3</div>
+                <div class="ext">audio</div>
+              </div>
+              <div class="chip">
+                <div class="name">WAV</div>
+                <div class="ext">audio</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="quality-head">
+              <span class="name">Quality</span>
+              <span class="num">HIGH · 65</span>
+            </div>
+            <input type="range" min="0" max="100" value="65" class="slider">
+            <div class="stats">
+              <div class="stat-mini">
+                <div class="k">Bitrate</div>
+                <div class="v">~9.3 Mbps</div>
+              </div>
+              <div class="stat-mini">
+                <div class="k">Est. size</div>
+                <div class="v">—</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bottom-row">
+          <div class="input-glass">
+            <div class="lbl">Dimensions</div>
+            <select>
+              <option>Keep original</option>
+              <option>1920 × 1080</option>
+              <option>1280 × 720</option>
+              <option>854 × 480</option>
+            </select>
+          </div>
+          <div class="input-glass">
+            <div class="lbl">Suffix</div>
+            <input type="text" value="_converted">
+          </div>
+          <div class="input-glass">
+            <div class="lbl">Save to</div>
+            <select>
+              <option>Same as source</option>
+              <option>Choose folder…</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="toggle-row">
+          <div class="toggle-pill on">
+            <span>Include audio</span>
+            <span class="switch"></span>
+          </div>
+          <div class="toggle-pill on">
+            <span>Open folder when done</span>
+            <span class="switch"></span>
+          </div>
+        </div>
+
+        <button class="convert">⚡ Convert</button>
+
+        <div class="footer">
+          <span><span class="status-led"></span>READY</span>
+          <span>0 FILES · IDLE</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
