@@ -212,12 +212,18 @@ public class Update {
 		frame.getContentPane().add(topPanel);
 	}
 
-	public static void newVersion() {	
-		
+	public static void newVersion() {
+
+		// Update checking is disabled in Shutter Encoder Simple — the app is
+		// intentionally standalone and never communicates with the outside world.
+		// The original implementation followed below as dead code so the rest of
+		// the file still compiles, but the early return here ensures it never runs.
+		if (true) return;
+
 		cancelled = false;
-		
+
 	        try {
-	        	
+
 	        	JLabel news = new JLabel(Shutter.language.getProperty("wantToDownload"));
 	        	
 	        	try {

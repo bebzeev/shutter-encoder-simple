@@ -1681,8 +1681,10 @@ public class Shutter {
 			t.start();
 		}
 
-		if (Settings.btnDisableUpdate.isSelected() == false)
-			Update.newVersion();
+		// Update check disabled — Shutter Encoder Simple is intentionally offline-only.
+		// (Original Shutter polled github.com on launch; we don't.)
+		// if (Settings.btnDisableUpdate.isSelected() == false)
+		// 	Update.newVersion();
 
 		availableMemory = Runtime.getRuntime().maxMemory() - Runtime.getRuntime().totalMemory() + Runtime.getRuntime().freeMemory();
 	}
